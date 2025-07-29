@@ -2,7 +2,7 @@ use std::{fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, M
 
 pub type Precision = f32;
 
-#[derive(Debug, Default, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Vec3 {
     x: Precision,
     y: Precision,
