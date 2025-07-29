@@ -1,4 +1,5 @@
-use ray_tracing::{color::Color, image_formats::ppm::PPM, ray::Ray, vec3::{Point3, Precision, Vec3}};
+use ray_tracing::utility::{color::Color, ray::Ray, vec3::{Point3, Precision, Vec3}};
+use ray_tracing::image_formats::ppm::PPM;
 
 fn main() {
     // Image

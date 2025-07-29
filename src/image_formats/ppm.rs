@@ -1,4 +1,4 @@
-use crate::{color::Color, vec3::Precision};
+use crate::utility::{color::Color, vec3::Precision};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct PPM {
