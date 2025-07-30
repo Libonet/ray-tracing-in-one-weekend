@@ -6,7 +6,7 @@ fn main() {
 
     // Camera
 
-    let camera = Camera::new(16. / 9., 400);
+    let camera = Camera::default();
 
     // World
     

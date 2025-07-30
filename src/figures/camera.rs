@@ -7,6 +7,8 @@ use super::hittable::{HitRecord, Hittable};
 pub struct Camera {
     aspect_ratio: Precision,
     image_width: i32,
+    samples_per_pixel: i32,
+    pixel_samples_scale: Precision, // color scale factor for a sum of pixel samples
     image_height: i32,   // height of rendered image
     center: Point3,      // camera center
     pixel00_loc: Point3, // location of pixel 0,0
@@ -15,12 +17,14 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: Precision, image_width: i32) -> Self {
+    pub fn new(aspect_ratio: Precision, image_width: i32, samples_per_pixel: i32) -> Self {
         
         // Calculate the image height, and ensure that it's at least 1.
 
         let image_height = (image_width as Precision / aspect_ratio) as i32;
         let image_height = if image_height < 1 { 1 } else { image_height };
+
+        let pixel_samples_scale = 1.0 / samples_per_pixel as Precision;
 
         // Camera
 
@@ -50,6 +54,8 @@ impl Camera {
         Self { 
             aspect_ratio,
             image_width,
+            samples_per_pixel,
+            pixel_samples_scale,
             image_height,
             center,
             pixel00_loc,
@@ -61,11 +67,14 @@ impl Camera {
     pub fn render(&self, world: &dyn Hittable) {
         let ppm = PPM::generate(self.image_width as usize, self.image_height as usize, 255, 
             |row,col| {
-                let pixel_center = self.pixel00_loc + (col * self.pixel_delta_u) + (row * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
-                let r = Ray::new(self.center, ray_direction);
+                let mut pixel_color = Color::new(0.,0.,0.);
 
-                Camera::ray_color(&r, world)
+                for _sample in 0..self.samples_per_pixel {
+                    let r = self.get_ray(col as i32, row as i32);
+                    pixel_color += Camera::ray_color(&r, world);
+                }
+
+                self.pixel_samples_scale * pixel_color
         });
 
         ppm.output();
@@ -81,14 +90,32 @@ impl Camera {
         let a = 0.5 * (unit_direction.y() + 1.0);
         lerp(Color::new(1.0, 1.0, 1.0), Color::new(0.5, 0.7, 1.0), a)
     }
+
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        let offset = Camera::sample_square();
+        let pixel_center = self.pixel00_loc + 
+                           ((i as Precision + offset.x()) * self.pixel_delta_u) + 
+                           ((j as Precision + offset.y()) * self.pixel_delta_v);
+        let ray_direction = pixel_center - self.center;
+
+        Ray::new(self.center, ray_direction)
+    }
+
+    fn sample_square() -> Vec3 {
+        Vec3::new(fastrand::f32() - 0.5, fastrand::f32() - 0.5, 0.)
+    }
 }
 
 impl Default for Camera {
     fn default() -> Self {
         let aspect_ratio = 16. / 9.;
         let image_width = 400;
+        let samples_per_pixel = 100;
 
-        Self::new(aspect_ratio, image_width)
+        Self::new(aspect_ratio, image_width, samples_per_pixel)
     }
 }
 
