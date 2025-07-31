@@ -38,7 +38,7 @@ impl PPM {
             eprintln!("Scanlines remaining: {}", self.rows - row);
             for col in 0..self.cols {
                 let rgb = self.values[row * self.cols + col];
-                println!("{} {} {}", (rgb.x() * 255.99) as i32, (rgb.y() * 255.99) as i32, (rgb.z() * 255.99) as i32);
+                rgb.write_color();
             }
         }
 

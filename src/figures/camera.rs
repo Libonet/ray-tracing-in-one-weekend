@@ -8,6 +8,7 @@ pub struct Camera {
     aspect_ratio: Precision,
     image_width: i32,
     samples_per_pixel: i32,
+    max_depth: i32,
     pixel_samples_scale: Precision, // color scale factor for a sum of pixel samples
     image_height: i32,   // height of rendered image
     center: Point3,      // camera center
@@ -17,7 +18,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: Precision, image_width: i32, samples_per_pixel: i32) -> Self {
+    pub fn new(aspect_ratio: Precision, image_width: i32, samples_per_pixel: i32, max_depth: i32) -> Self {
         
         // Calculate the image height, and ensure that it's at least 1.
 
@@ -61,6 +62,7 @@ impl Camera {
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
+            max_depth,
         }
     }
 
@@ -71,7 +73,7 @@ impl Camera {
 
                 for _sample in 0..self.samples_per_pixel {
                     let r = self.get_ray(col as i32, row as i32);
-                    pixel_color += Camera::ray_color(&r, world);
+                    pixel_color += Camera::ray_color(&r, self.max_depth, world);
                 }
 
                 self.pixel_samples_scale * pixel_color
@@ -80,10 +82,14 @@ impl Camera {
         ppm.output();
     }
 
-    fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    fn ray_color(r: &Ray, depth: i32, world: &dyn Hittable) -> Color {
+        if depth <= 0 { return Color::new(0., 0., 0.); }
+
         let mut rec = HitRecord::default();
-        if world.hit(r, Interval::new(0., Precision::INFINITY), &mut rec) {
-            return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+        if world.hit(r, Interval::new(0.001, Precision::INFINITY), &mut rec) {
+            // Lambertian scattering
+            let direction = rec.normal + Vec3::random_unit_vec();
+            return 0.5 * Camera::ray_color(&Ray::new(rec.p, direction), depth-1, world);
         }
 
         let unit_direction = r.direction().unit_vec();
@@ -114,8 +120,9 @@ impl Default for Camera {
         let aspect_ratio = 16. / 9.;
         let image_width = 400;
         let samples_per_pixel = 100;
+        let max_depth = 50;
 
-        Self::new(aspect_ratio, image_width, samples_per_pixel)
+        Self::new(aspect_ratio, image_width, samples_per_pixel, max_depth)
     }
 }
 

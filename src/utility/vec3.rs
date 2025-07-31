@@ -1,5 +1,7 @@
 use std::{fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign}};
 
+use super::utils::random_f32;
+
 pub type Precision = f32;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
@@ -34,6 +36,20 @@ impl Vec3 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)    
     }
 
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-4;
+
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
+    }
+
+    pub fn random() -> Self {
+        Self { x: fastrand::f32(), y: fastrand::f32(), z: fastrand::f32() }
+    }
+
+    pub fn random_bounded(min: Precision, max: Precision) -> Self {
+        Self { x: random_f32(min, max), y: random_f32(min, max), z: random_f32(min, max) }
+    }
+
     pub fn dot(&self, rhs: &Vec3) -> Precision {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
@@ -49,6 +65,29 @@ impl Vec3 {
     pub fn unit_vec(self) -> Self {
         let len = self.len();
         self / len
+    }
+
+    pub fn random_unit_vec() -> Self {
+        loop {
+            let p = Vec3::random_bounded(-1., 1.);
+            let lensq = p.len_square();
+            if Precision::MIN < lensq && lensq <= 1. {
+                return p / lensq.sqrt();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Self {
+        let on_unit_sphere = Vec3::random_unit_vec();
+        if on_unit_sphere.dot(normal) > 0. {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
+    }
+
+    pub fn reflect(&self, normal: &Vec3) -> Vec3 {
+        *self - 2.*self.dot(normal) * *normal
     }
 }
 
