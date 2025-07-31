@@ -87,9 +87,11 @@ impl Camera {
 
         let mut rec = HitRecord::default();
         if world.hit(r, Interval::new(0.001, Precision::INFINITY), &mut rec) {
-            // Lambertian scattering
-            let direction = rec.normal + Vec3::random_unit_vec();
-            return 0.5 * Camera::ray_color(&Ray::new(rec.p, direction), depth-1, world);
+            if let Some(scattered_ray) = rec.material.scatter(r, &rec) {
+                return scattered_ray.attenuation * Camera::ray_color(&scattered_ray.ray, depth-1, world)
+            } else {
+                return Color::new(0., 0., 0.);
+            }
         }
 
         let unit_direction = r.direction().unit_vec();
