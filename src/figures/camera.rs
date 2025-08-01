@@ -83,15 +83,16 @@ impl Camera {
     }
 
     fn ray_color(r: &Ray, depth: i32, world: &dyn Hittable) -> Color {
-        if depth <= 0 { return Color::new(0., 0., 0.); }
+        if depth <= 0 {
+            return Color::new(0., 0., 0.);
+        }
 
         let mut rec = HitRecord::default();
         if world.hit(r, Interval::new(0.001, Precision::INFINITY), &mut rec) {
             if let Some(scattered_ray) = rec.material.scatter(r, &rec) {
                 return scattered_ray.attenuation * Camera::ray_color(&scattered_ray.ray, depth-1, world)
-            } else {
-                return Color::new(0., 0., 0.);
-            }
+            } 
+            return Color::new(0., 0., 0.);
         }
 
         let unit_direction = r.direction().unit_vec();

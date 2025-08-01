@@ -32,19 +32,19 @@ impl Hittable for Sphere {
         let oc = self.center - *r.origin();
         let a = r.direction().len_square();
         let h = r.direction().dot(&oc);
-        let c = oc.len_square() - self.radius * self.radius;
-        let discriminant = h * h - a * c;
+        let c = oc.len_square() - self.radius.powi(2);
+        let discriminant = h.powi(2) - a * c;
 
-        if discriminant < 0.0 {
+        if discriminant < 0. {
             return false;
         }
 
         let sqrtd = discriminant.sqrt();
 
         // find the nearest root that lies in the acceptable range.
-        let root = (h - sqrtd) / a;
+        let mut root = (h - sqrtd) / a;
         if !ray_t.surrounds(root) {
-            let root = (h + sqrtd) / a;
+            root = (h + sqrtd) / a;
             if !ray_t.surrounds(root) {
                 return false;
             }

@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use ray_tracing::{
     figures::{camera::Camera, sphere::Sphere},
-    materials::{lambertian::Lambertian, metal::Metal},
+    materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
     utility::{color::Color, vec3::Point3},
 };
 
@@ -14,8 +14,8 @@ fn main() {
     // World
 
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.9));
+    let material_center = Rc::new(Dielectric::new(1.5));
+    let material_left = Rc::new(Dielectric::new(1. / 1.33));
     let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.1));
 
     let world = vec![

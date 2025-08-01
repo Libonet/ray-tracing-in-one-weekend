@@ -18,7 +18,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatteredRay> {
-        let reflected = ray.direction().reflect(&rec.normal);
+        let reflected = ray.direction().reflect(rec.normal);
         let reflected = reflected.unit_vec() + (self.fuzz * Vec3::random_unit_vec());
         let scattered = Ray::new(rec.p, reflected);
         let attenuation = self.albedo;
