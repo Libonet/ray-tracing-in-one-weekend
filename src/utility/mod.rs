@@ -6,7 +6,7 @@ pub mod interval;
 
 pub mod utils {
     // use std::f64::consts::PI as pi64;
-    use std::f32::consts::PI as pi32;
+    pub use std::f32::consts::PI as pi32;
 
     use super::vec3::Precision;
 

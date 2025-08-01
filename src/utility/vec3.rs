@@ -57,7 +57,7 @@ impl Vec3 {
     pub fn cross(&self, rhs: &Vec3) -> Self {
         Self { 
             x: self.y * rhs.z - self.z * rhs.y,
-            y: self.x * rhs.z - self.z * rhs.x,
+            y: self.z * rhs.x - self.x * rhs.z,
             z: self.x * rhs.y - self.y * rhs.x,
         }
     }
