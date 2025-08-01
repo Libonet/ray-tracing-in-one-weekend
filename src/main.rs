@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use ray_tracing::{
-    figures::{camera::{Camera, ImageSettings, ViewSettings}, sphere::Sphere},
+    figures::{camera::{Camera, DefocusSettings, ImageSettings, ViewSettings}, sphere::Sphere},
     materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
     utility::{color::Color, vec3::{Point3, Vec3}},
 };
@@ -11,12 +11,16 @@ fn main() {
 
     let image_settings = ImageSettings::default();
     let view_settings = ViewSettings {
-        vfov: 90.,
+        vfov: 20.,
         look_from: Point3::new(-2., 2., 1.),
         look_at: Point3::new(0., 0., -1.),
         vup: Vec3::new(0., 1., 0.),
     };
-    let camera = Camera::new(image_settings, view_settings);
+    let defocus_settings = DefocusSettings {
+        defocus_angle: 10.,
+        focus_dist: 3.4,
+    };
+    let camera = Camera::new(image_settings, view_settings, defocus_settings);
 
     // World
 

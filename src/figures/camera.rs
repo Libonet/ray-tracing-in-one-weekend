@@ -57,6 +57,23 @@ impl Default for ViewSettings {
     }
 }
 
+pub struct DefocusSettings {
+    pub defocus_angle: Precision,
+    pub focus_dist: Precision,
+}
+
+impl Default for DefocusSettings {
+    fn default() -> Self {
+        let defocus_angle = 0.;
+        let focus_dist = 10.;
+
+        Self {
+            defocus_angle,
+            focus_dist,
+        }
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Camera {
@@ -79,14 +96,24 @@ pub struct Camera {
     pixel_delta_u: Vec3,            // offset to pixel to the right
     pixel_delta_v: Vec3,            // offset to pixel below
 
-    // camera frame basis vectors
+    // Camera frame basis vectors.
     u: Vec3,
     v: Vec3,
     w: Vec3,
+
+    // Defocus.
+    defocus_angle: Precision,
+    focus_dist: Precision,
+    defocus_disk_u: Vec3,
+    defocus_disk_v: Vec3,
 }
 
 impl Camera {
-    pub fn new(image_settings: ImageSettings, view_settings: ViewSettings) -> Self {
+    pub fn new(
+        image_settings: ImageSettings,
+        view_settings: ViewSettings,
+        defocus_settings: DefocusSettings,
+    ) -> Self {
         // Calculate the image height, and ensure that it's at least 1.
 
         let image_height =
@@ -99,11 +126,10 @@ impl Camera {
 
         let center = view_settings.look_from;
 
-        let focal_length = (view_settings.look_from - view_settings.look_at).len();
         let theta = degrees_to_radians(view_settings.vfov);
         let h = (theta / 2.).tan();
 
-        let viewport_height = 2. * h * focal_length;
+        let viewport_height = 2. * h * defocus_settings.focus_dist;
         let viewport_width =
             viewport_height * (image_settings.image_width as Precision / image_height as Precision);
 
@@ -124,8 +150,15 @@ impl Camera {
 
         // Calculate the location of the upper left pixel.
 
-        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2. - viewport_v / 2.;
+        let viewport_upper_left =
+            center - (defocus_settings.focus_dist * w) - viewport_u / 2. - viewport_v / 2.;
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        // Calculate the camera defocus disk basis vectors.
+
+        let defocus_radius = defocus_settings.focus_dist * degrees_to_radians(defocus_settings.defocus_angle / 2.).tan();
+        let defocus_disk_u = u * defocus_radius;
+        let defocus_disk_v = v * defocus_radius;
 
         Self {
             aspect_ratio: image_settings.aspect_ratio,
@@ -147,6 +180,11 @@ impl Camera {
             u,
             v,
             w,
+
+            defocus_angle: defocus_settings.defocus_angle,
+            focus_dist: defocus_settings.focus_dist,
+            defocus_disk_u,
+            defocus_disk_v,
         }
     }
 
@@ -189,21 +227,29 @@ impl Camera {
         lerp(Color::new(1.0, 1.0, 1.0), Color::new(0.5, 0.7, 1.0), a)
     }
 
+    /// Construct a camera ray originating from the defocus disk and directed at randomly
+    /// sampled point around the pixel location i, j.
     fn get_ray(&self, i: i32, j: i32) -> Ray {
-        // Construct a camera ray originating from the origin and directed at randomly sampled
-        // point around the pixel location i, j.
 
         let offset = Camera::sample_square();
         let pixel_center = self.pixel00_loc
             + ((i as Precision + offset.x()) * self.pixel_delta_u)
             + ((j as Precision + offset.y()) * self.pixel_delta_v);
-        let ray_direction = pixel_center - self.center;
 
-        Ray::new(self.center, ray_direction)
+        let ray_origin = if self.defocus_angle <= 0. { self.center } else { self.defocus_disk_sample() };
+        let ray_direction = pixel_center - ray_origin;
+
+        Ray::new(ray_origin, ray_direction)
     }
 
     fn sample_square() -> Vec3 {
         Vec3::new(fastrand::f32() - 0.5, fastrand::f32() - 0.5, 0.)
+    }
+
+    /// Returns a random point in the camera defocus disk.
+    fn defocus_disk_sample(&self) -> Point3 {
+        let p = Vec3::random_in_unit_disk();
+        self.center + (p.x() * self.defocus_disk_u) + (p.y() * self.defocus_disk_v)
     }
 }
 
@@ -211,8 +257,9 @@ impl Default for Camera {
     fn default() -> Self {
         let image_settings = ImageSettings::default();
         let view_settings = ViewSettings::default();
+        let defocus_settings = DefocusSettings::default();
 
-        Self::new(image_settings, view_settings)
+        Self::new(image_settings, view_settings, defocus_settings)
     }
 }
 

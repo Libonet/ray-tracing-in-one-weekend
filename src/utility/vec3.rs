@@ -86,6 +86,15 @@ impl Vec3 {
         }
     }
 
+    pub fn random_in_unit_disk() -> Self {
+        loop {
+            let p = Vec3::new(random_f32(-1., 1.), random_f32(-1., 1.), 0.);
+            if p.len_square() < 1. {
+                return p;
+            }
+        }
+    }
+
     pub fn reflect(self, normal: Vec3) -> Self {
         self - 2. * self.dot(&normal) * normal
     }
