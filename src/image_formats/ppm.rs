@@ -21,10 +21,13 @@ impl PPM {
         let mut values = Vec::with_capacity(cols * rows);
 
         for row in 0..rows {
+            eprintln!("Scanlines remaining: {}", rows - row);
             for col in 0..cols {
                 values.push(gen(row as Precision, col as Precision));
             }
         }
+
+        eprintln!("Done! :D");
 
         PPM::new(cols, rows, max_color, values)
     }
@@ -35,14 +38,11 @@ impl PPM {
         println!("{}", self.max_color);
         
         for row in 0..self.rows {
-            eprintln!("Scanlines remaining: {}", self.rows - row);
             for col in 0..self.cols {
                 let rgb = self.values[row * self.cols + col];
                 rgb.write_color();
             }
         }
-
-        eprintln!("Done! :D");
     }
 }
 
