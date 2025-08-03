@@ -30,17 +30,18 @@ impl Interval {
         x
     }
 
-    pub fn empty() -> Self {
-        Self { min: Precision::INFINITY, max: Precision::NEG_INFINITY }
+    pub fn expand(&self, delta: Precision) -> Self {
+        let padding = delta / 2.;
+        Self { min: self.min - padding, max: self.max + padding }
     }
 
-    pub fn universe() -> Self {
-        Self { min: Precision::NEG_INFINITY, max: Precision::INFINITY }
-    }
+    pub const EMPTY: Self = Self { min: Precision::INFINITY, max: Precision::NEG_INFINITY };
+
+    pub const UNIVERSE: Self = Self { min: Precision::NEG_INFINITY, max: Precision::INFINITY };
 }
 
 impl Default for Interval {
     fn default() -> Self {
-        Self::empty()
+        Self::EMPTY
     }
 }
