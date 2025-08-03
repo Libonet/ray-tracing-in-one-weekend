@@ -18,8 +18,8 @@ fn main() {
 
     let image_settings = ImageSettings {
         aspect_ratio: 16. / 9.,
-        image_width: 1200,
-        samples_per_pixel: 500,
+        image_width: 400,
+        samples_per_pixel: 100,
         max_depth: 50,
     };
     let view_settings = ViewSettings {
@@ -58,24 +58,26 @@ fn main() {
             );
 
             if (center - Point3::new(4., 0.2, 0.)).len() > 0.9 {
-                let sphere_material: Rc<dyn Material> = if choose_mat < 0.8 {
+                if choose_mat < 0.8 {
                     // diffuse.
 
                     let albedo = Color::random() * Color::random();
-                    Rc::new(Lambertian::new(albedo))
+                    let sphere_material = Rc::new(Lambertian::new(albedo));
+                    let center2 = center + Vec3::new(0., random_f32(0., 0.5), 0.);
+                    world.push(Rc::new(Sphere::new_animated(center, center2, 0.2, sphere_material)));
                 } else if choose_mat < 0.95 {
                     // metal.
 
                     let albedo = Color::random_bounded(0.5, 1.);
                     let fuzz = random_f32(0., 0.5);
-                    Rc::new(Metal::new(albedo, fuzz))
+                    let sphere_material = Rc::new(Metal::new(albedo, fuzz));
+                    world.push(Rc::new(Sphere::new(center, 0.2, sphere_material)));
                 } else {
                     // glass.
 
-                    material_1.clone()
-                };
-
-                world.push(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                    let sphere_material = material_1.clone();
+                    world.push(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                }
             }
         }
     }

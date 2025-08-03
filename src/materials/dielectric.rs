@@ -31,7 +31,7 @@ impl Material for Dielectric {
             unit_direction.refract(rec.normal, ri)
         };
 
-        let scattered = Ray::new(rec.p, direction);
+        let scattered = Ray::with_time(rec.p, direction, ray.time());
 
         Some(ScatteredRay { ray: scattered, attenuation })
     }

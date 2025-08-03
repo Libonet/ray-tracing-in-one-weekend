@@ -4,11 +4,16 @@ use crate::utility::vec3::{Point3, Precision, Vec3};
 pub struct Ray {
     orig: Point3,
     dir: Vec3,
+    tm: Precision,
 }
 
 impl Ray {
     pub fn new(orig: Point3, dir: Vec3) -> Self {
-        Self { orig, dir }
+        Self { orig, dir, tm: 0. }
+    }
+
+    pub fn with_time(orig: Point3, dir: Vec3, tm: Precision) -> Self {
+        Self { orig, dir, tm }
     }
 
     pub fn origin(&self) -> &Point3 {
@@ -17,6 +22,10 @@ impl Ray {
 
     pub fn direction(&self) -> &Vec3 {
         &self.dir
+    }
+
+    pub fn time(&self) -> Precision {
+        self.tm
     }
 
     pub fn origin_mut(&mut self) -> &mut Point3 {
