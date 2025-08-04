@@ -1,6 +1,5 @@
 use super::vec3::Precision;
 
-
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Interval {
     pub min: Precision,
@@ -10,6 +9,11 @@ pub struct Interval {
 impl Interval {
     pub fn new(min: Precision, max: Precision) -> Self {
         Self { min, max }
+    }
+
+    pub fn concat(&mut self, rhs: Interval) {
+        self.min = self.min.min(rhs.min);
+        self.max = self.max.max(rhs.max);
     }
 
     pub fn size(&self) -> Precision {
@@ -25,19 +29,32 @@ impl Interval {
     }
 
     pub fn clamp(&self, x: Precision) -> Precision {
-        if x < self.min { return self.min; }
-        if x > self.max { return self.max; }
+        if x < self.min {
+            return self.min;
+        }
+        if x > self.max {
+            return self.max;
+        }
         x
     }
 
     pub fn expand(&self, delta: Precision) -> Self {
         let padding = delta / 2.;
-        Self { min: self.min - padding, max: self.max + padding }
+        Self {
+            min: self.min - padding,
+            max: self.max + padding,
+        }
     }
 
-    pub const EMPTY: Self = Self { min: Precision::INFINITY, max: Precision::NEG_INFINITY };
+    pub const EMPTY: Self = Self {
+        min: Precision::INFINITY,
+        max: Precision::NEG_INFINITY,
+    };
 
-    pub const UNIVERSE: Self = Self { min: Precision::NEG_INFINITY, max: Precision::INFINITY };
+    pub const UNIVERSE: Self = Self {
+        min: Precision::NEG_INFINITY,
+        max: Precision::INFINITY,
+    };
 }
 
 impl Default for Interval {

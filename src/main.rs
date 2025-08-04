@@ -3,9 +3,10 @@ use std::rc::Rc;
 use ray_tracing::{
     figures::{
         camera::{Camera, DefocusSettings, ImageSettings, ViewSettings},
+        hittable_list::HitList,
         sphere::Sphere,
     },
-    materials::{dielectric::Dielectric, lambertian::Lambertian, material::Material, metal::Metal},
+    materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
     utility::{
         color::Color,
         utils::random_f32,
@@ -36,7 +37,7 @@ fn main() {
 
     // World
 
-    let mut world = Vec::new();
+    let mut world = HitList::new();
 
     let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     world.push(Rc::new(Sphere::new(
@@ -64,7 +65,12 @@ fn main() {
                     let albedo = Color::random() * Color::random();
                     let sphere_material = Rc::new(Lambertian::new(albedo));
                     let center2 = center + Vec3::new(0., random_f32(0., 0.5), 0.);
-                    world.push(Rc::new(Sphere::new_animated(center, center2, 0.2, sphere_material)));
+                    world.push(Rc::new(Sphere::new_animated(
+                        center,
+                        center2,
+                        0.2,
+                        sphere_material,
+                    )));
                 } else if choose_mat < 0.95 {
                     // metal.
 

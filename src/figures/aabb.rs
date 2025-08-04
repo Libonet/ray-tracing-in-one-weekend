@@ -1,6 +1,6 @@
 use crate::utility::{interval::Interval, ray::Ray, vec3::Point3};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, PartialOrd)]
 pub struct AABB {
     x: Interval,
     y: Interval,
@@ -18,6 +18,12 @@ impl AABB {
         let z = if a.z() <= b.z() { Interval::new(a.z(), b.z()) } else { Interval::new(b.z(), a.z()) };
 
         Self { x, y, z }
+    }
+
+    pub fn concat(&mut self, rhs: AABB) {
+        self.x.concat(rhs.x);
+        self.y.concat(rhs.y);
+        self.z.concat(rhs.z);
     }
 
     pub fn axis_interval(&self, n: i32) -> Interval {

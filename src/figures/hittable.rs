@@ -9,6 +9,8 @@ use crate::{
     },
 };
 
+use super::aabb::AABB;
+
 #[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
@@ -47,28 +49,15 @@ impl Default for HitRecord {
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
-}
-
-impl<T: Hittable> Hittable for Vec<T> {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        let mut temp_rec = HitRecord::default();
-        let mut hit_anything = false;
-        let mut closest_so_far = ray_t.max;
-
-        for item in self.iter() {
-            if item.hit(r, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
-                hit_anything = true;
-                closest_so_far = temp_rec.t;
-                *rec = temp_rec.clone();
-            }
-        }
-
-        hit_anything
-    }
+    fn bounding_box(&self) -> AABB;
 }
 
 impl<T: Hittable> Hittable for Rc<T> {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         Rc::deref(self).hit(r, ray_t, rec)
+    }
+
+    fn bounding_box(&self) -> AABB {
+        Rc::deref(self).bounding_box()
     }
 }

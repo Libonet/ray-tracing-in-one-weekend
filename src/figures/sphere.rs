@@ -9,28 +9,52 @@ use crate::{
     },
 };
 
-use super::hittable::{HitRecord, Hittable};
+use super::{
+    aabb::AABB,
+    hittable::{HitRecord, Hittable},
+};
 
 pub struct Sphere {
     center: Ray,
     radius: Precision,
     mat: Rc<dyn Material>,
+    bbox: AABB,
 }
 
 impl Sphere {
     pub fn new(static_center: Point3, radius: Precision, mat: Rc<dyn Material>) -> Self {
+        let center = Ray::new(static_center, Vec3::new(0., 0., 0.));
+        let radius = Precision::max(0., radius);
+
+        let rvec = Point3::new(radius, radius, radius);
         Self {
-            center: Ray::new(static_center, Vec3::new(0., 0., 0.)),
-            radius: Precision::max(0., radius),
+            center,
+            radius,
             mat,
+            bbox: AABB::from_points(static_center - rvec, static_center + rvec),
         }
     }
 
-    pub fn new_animated(center1: Point3, center2: Point3, radius: Precision, mat: Rc<dyn Material>) -> Self {
+    pub fn new_animated(
+        center1: Point3,
+        center2: Point3,
+        radius: Precision,
+        mat: Rc<dyn Material>,
+    ) -> Self {
+        let center = Ray::new(center1, center2 - center1);
+        let radius = Precision::max(0., radius);
+
+        let rvec = Point3::new(radius, radius, radius);
+
+        let mut bbox = AABB::from_points(center.at(0.) - rvec, center.at(0.) + rvec);
+        let box2 = AABB::from_points(center.at(1.) - rvec, center.at(1.) + rvec);
+
+        bbox.concat(box2);
         Self {
-            center: Ray::new(center1, center2 - center1),
-            radius: Precision::max(0., radius),
+            center,
+            radius,
             mat,
+            bbox,
         }
     }
 }
@@ -66,5 +90,9 @@ impl Hittable for Sphere {
         rec.material = self.mat.clone();
 
         true
+    }
+
+    fn bounding_box(&self) -> AABB {
+        self.bbox.clone()
     }
 }
