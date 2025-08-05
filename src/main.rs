@@ -2,7 +2,10 @@ use std::rc::Rc;
 
 use ray_tracing::{
     figures::{
-        bvh::BvhNode, camera::{Camera, DefocusSettings, ImageSettings, ViewSettings}, hittable::Hittable, hittable_list::HitList, sphere::Sphere
+        bvh::BvhNode,
+        camera::{Camera, DefocusSettings, ImageSettings, ViewSettings},
+        hittable_list::HitList,
+        sphere::Sphere,
     },
     materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
     utility::{
@@ -35,7 +38,7 @@ fn main() {
 
     // World
 
-    let mut world: Vec<Rc<dyn Hittable>> = Vec::new();
+    let mut world = HitList::new();
 
     let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     world.push(Rc::new(Sphere::new(
@@ -106,7 +109,7 @@ fn main() {
         material_3.clone(),
     )));
 
-    let world = BvhNode::new(world);
+    let world = BvhNode::from_hitlist(world);
 
     camera.render(&world);
 }

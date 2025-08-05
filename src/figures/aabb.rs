@@ -13,9 +13,21 @@ impl AABB {
     }
 
     pub fn from_points(a: Point3, b: Point3) -> Self {
-        let x = if a.x() <= b.x() { Interval::new(a.x(), b.x()) } else { Interval::new(b.x(), a.x()) };
-        let y = if a.y() <= b.y() { Interval::new(a.y(), b.y()) } else { Interval::new(b.y(), a.y()) };
-        let z = if a.z() <= b.z() { Interval::new(a.z(), b.z()) } else { Interval::new(b.z(), a.z()) };
+        let x = if a.x() <= b.x() {
+            Interval::new(a.x(), b.x())
+        } else {
+            Interval::new(b.x(), a.x())
+        };
+        let y = if a.y() <= b.y() {
+            Interval::new(a.y(), b.y())
+        } else {
+            Interval::new(b.y(), a.y())
+        };
+        let z = if a.z() <= b.z() {
+            Interval::new(a.z(), b.z())
+        } else {
+            Interval::new(b.z(), a.z())
+        };
 
         Self { x, y, z }
     }
@@ -46,17 +58,51 @@ impl AABB {
             let t1 = (ax.max - ray_orig[axis]) * adinv;
 
             if t0 < t1 {
-                if t0 > ray_t.min { ray_t.min = t0 }
-                if t1 < ray_t.max { ray_t.max = t1 }
+                if t0 > ray_t.min {
+                    ray_t.min = t0
+                }
+                if t1 < ray_t.max {
+                    ray_t.max = t1
+                }
             } else {
-                if t1 > ray_t.min { ray_t.min = t1 }
-                if t0 < ray_t.max { ray_t.max = t0 }
+                if t1 > ray_t.min {
+                    ray_t.min = t1
+                }
+                if t0 < ray_t.max {
+                    ray_t.max = t0
+                }
             }
 
-            if ray_t.max <= ray_t.min { return false }
+            if ray_t.max <= ray_t.min {
+                return false;
+            }
         }
 
         true
     }
-}
 
+    pub fn longest_axis(&self) -> i32 {
+        if self.x.size() > self.y.size() {
+            if self.x.size() > self.z.size() {
+                0
+            } else {
+                2
+            }
+        } else if self.y.size() > self.z.size() {
+            1
+        } else {
+            2
+        }
+    }
+
+    pub const EMPTY: Self = Self {
+        x: Interval::EMPTY,
+        y: Interval::EMPTY,
+        z: Interval::EMPTY,
+    };
+    pub const UNIVERSE: Self = Self {
+        x: Interval::UNIVERSE,
+        y: Interval::UNIVERSE,
+        z: Interval::UNIVERSE,
+    };
+}

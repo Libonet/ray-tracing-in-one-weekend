@@ -1,10 +1,11 @@
 use std::{cmp::Ordering, rc::Rc};
 
-use crate::utility::{interval::Interval, ray::Ray, utils::random_i32};
+use crate::utility::{interval::Interval, ray::Ray};
 
 use super::{
     aabb::AABB,
     hittable::{HitRecord, Hittable},
+    hittable_list::HitList,
 };
 
 #[derive(Clone)]
@@ -15,13 +16,18 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    // pub fn from_hitlist(list: HitList<Rc<dyn Hittable>>) -> Self {
-    //     Self::new(list.objects())
-    // }
+    pub fn from_hitlist(list: HitList<Rc<dyn Hittable>>) -> Self {
+        Self::new(list.objects())
+    }
 
     pub fn new(mut objects: Vec<Rc<dyn Hittable>>) -> Self {
         assert!(!objects.is_empty());
-        let axis = random_i32(0, 2);
+        let mut bbox = AABB::EMPTY;
+        for object in objects.iter() {
+            bbox.concat(object.bounding_box());
+        }
+
+        let axis = bbox.longest_axis();
 
         let (left, right) = match objects.len() {
             1 => {
@@ -49,9 +55,6 @@ impl BvhNode {
                 (left as Rc<dyn Hittable>, right as Rc<dyn Hittable>)
             }
         };
-
-        let mut bbox = left.bounding_box();
-        bbox.concat(right.bounding_box());
 
         Self { left, right, bbox }
     }
