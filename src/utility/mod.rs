@@ -19,4 +19,9 @@ pub mod utils {
     pub fn random_f32(min: f32, max: f32) -> f32 {
         min + (max - min) * fastrand::f32()
     }
+
+    #[inline(always)]
+    pub fn random_i32(min: i32, max: i32) -> i32 {
+        fastrand::i32(min..=max)
+    }
 }

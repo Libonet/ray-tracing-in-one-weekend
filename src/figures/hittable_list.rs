@@ -6,7 +6,7 @@ use super::{
 };
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd)]
-pub struct HitList<T> {
+pub struct HitList<T: Hittable> {
     list: Vec<T>,
     bbox: AABB,
 }
@@ -27,6 +27,12 @@ impl<T: Hittable> HitList<T> {
     pub fn clear(&mut self) {
         self.list.clear();
         self.bbox = AABB::default();
+    } 
+}
+
+impl<T: Hittable + Clone> HitList<T> {
+    pub fn objects(&self) -> Vec<T> {
+        self.list.clone()
     }
 }
 
