@@ -1,4 +1,5 @@
-use std::rc::Rc;
+
+use std::sync::Arc;
 
 use crate::{figures::hittable::HitRecord, textures::texture::{SolidColor, Texture}, utility::{color::Color, ray::Ray, vec3::Vec3}};
 
@@ -6,15 +7,15 @@ use super::material::{Material, ScatteredRay};
 
 #[derive(Clone)]
 pub struct Lambertian {
-    tex: Rc<dyn Texture>,
+    tex: Arc<dyn Texture>,
 }
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self { tex: Rc::new(SolidColor::new(albedo)) }
+        Self { tex: Arc::new(SolidColor::new(albedo)) }
     }
 
-    pub fn from_texture(tex: Rc<dyn Texture>) -> Self {
+    pub fn from_texture(tex: Arc<dyn Texture>) -> Self {
         Self { tex }
     }
 }

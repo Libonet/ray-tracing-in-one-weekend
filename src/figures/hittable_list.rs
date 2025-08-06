@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::utility::{interval::Interval, ray::Ray};
 
@@ -38,8 +38,8 @@ impl<T> HitList<T> {
 //     }
 // }
 
-impl HitList<Rc<dyn Hittable>> {
-    pub fn push(&mut self, value: Rc<dyn Hittable>) {
+impl HitList<Arc<dyn Hittable>> {
+    pub fn push(&mut self, value: Arc<dyn Hittable>) {
         self.bbox.concat(value.bounding_box());
         self.list.push(value);
     }
@@ -67,7 +67,7 @@ impl<T: Hittable> Hittable for HitList<T> {
     }
 }
 
-impl Hittable for HitList<Rc<dyn Hittable>> {
+impl Hittable for HitList<Arc<dyn Hittable>> {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let mut temp_rec = HitRecord::default();
         let mut hit_anything = false;

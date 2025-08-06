@@ -1,4 +1,4 @@
-use std::{io::stdin, rc::Rc};
+use std::{io::stdin, sync::Arc};
 
 use ray_tracing::{
     figures::{
@@ -49,21 +49,21 @@ fn main() {
 fn checkered_spheres() {
     let mut world = HitList::new();
 
-    let checker = Rc::new(CheckerTexture::from_colors(
+    let checker = Arc::new(CheckerTexture::from_colors(
         0.32,
         Color::new(0.2, 0.3, 0.1),
         Color::new(0.9, 0.9, 0.9),
     ));
 
-    world.push(Rc::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(0., -10., 0.),
         10.,
-        Rc::new(Lambertian::from_texture(checker.clone())),
+        Arc::new(Lambertian::from_texture(checker.clone())),
     )));
-    world.push(Rc::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(0., 10., 0.),
         10.,
-        Rc::new(Lambertian::from_texture(checker)),
+        Arc::new(Lambertian::from_texture(checker)),
     )));
 
     let view_settings = ViewSettings {
@@ -102,20 +102,20 @@ fn bouncing_spheres() {
 
     let mut world = HitList::new();
 
-    let checker = Rc::new(CheckerTexture::from_colors(
+    let checker = Arc::new(CheckerTexture::from_colors(
         0.32,
         Color::new(0.2, 0.3, 0.1),
         Color::new(0.9, 0.9, 0.9),
     ));
-    let ground_material = Rc::new(Lambertian::from_texture(checker));
-    world.push(Rc::new(Sphere::new(
+    let ground_material = Arc::new(Lambertian::from_texture(checker));
+    world.push(Arc::new(Sphere::new(
         Point3::new(0., -1000., 0.),
         1000.,
         ground_material.clone(),
     )));
 
     // glass.
-    let material_1 = Rc::new(Dielectric::new(1.5));
+    let material_1 = Arc::new(Dielectric::new(1.5));
 
     for a in -11..11 {
         for b in -11..11 {
@@ -131,9 +131,9 @@ fn bouncing_spheres() {
                     // diffuse.
 
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Rc::new(Lambertian::new(albedo));
+                    let sphere_material = Arc::new(Lambertian::new(albedo));
                     let center2 = center + Vec3::new(0., random_f32(0., 0.5), 0.);
-                    world.push(Rc::new(Sphere::new_animated(
+                    world.push(Arc::new(Sphere::new_animated(
                         center,
                         center2,
                         0.2,
@@ -144,33 +144,33 @@ fn bouncing_spheres() {
 
                     let albedo = Color::random_bounded(0.5, 1.);
                     let fuzz = random_f32(0., 0.5);
-                    let sphere_material = Rc::new(Metal::new(albedo, fuzz));
-                    world.push(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                    let sphere_material = Arc::new(Metal::new(albedo, fuzz));
+                    world.push(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                 } else {
                     // glass.
 
                     let sphere_material = material_1.clone();
-                    world.push(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.push(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                 }
             }
         }
     }
 
-    world.push(Rc::new(Sphere::new(
+    world.push(Arc::new(Sphere::new(
         Point3::new(0., 1., 0.),
         1.,
         material_1.clone(),
     )));
 
-    let material_2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    world.push(Rc::new(Sphere::new(
+    let material_2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    world.push(Arc::new(Sphere::new(
         Point3::new(-4., 1., 0.),
         1.,
         material_2.clone(),
     )));
 
-    let material_3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.));
-    world.push(Rc::new(Sphere::new(
+    let material_3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.));
+    world.push(Arc::new(Sphere::new(
         Point3::new(4., 1., 0.),
         1.,
         material_3.clone(),

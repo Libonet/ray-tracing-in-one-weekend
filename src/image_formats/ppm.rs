@@ -1,3 +1,7 @@
+use std::sync::atomic::AtomicI32;
+
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
 use crate::utility::{color::Color, vec3::Precision};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
@@ -16,16 +20,24 @@ impl PPM {
 
     pub fn generate<F>(cols: usize, rows: usize, max_color: u8, gen: F) -> Self
     where 
-        F: Fn(Precision, Precision) -> Color,
+        F: Fn(Precision, Precision) -> Color + Sync,
     {
-        let mut values = Vec::with_capacity(cols * rows);
-
-        for row in 0..rows {
-            eprintln!("Scanlines remaining: {}", rows - row);
-            for col in 0..cols {
-                values.push(gen(row as Precision, col as Precision));
-            }
-        }
+        let lines_left = AtomicI32::new(rows as i32);
+        let values = (0..rows)
+            .into_par_iter()
+            .map(|row| {
+                eprintln!("Scanlines remaining: {}", lines_left.fetch_sub(1, std::sync::atomic::Ordering::Relaxed));
+                (0..cols)
+                    .into_par_iter()
+                    .map(|col| {
+                        gen(row as Precision, col as Precision)
+                    })
+                    .collect()
+            })
+            .reduce(Vec::new, |mut acc, mut val| {
+                acc.append(&mut val);
+                acc
+            });
 
         eprintln!("Done! :D");
 

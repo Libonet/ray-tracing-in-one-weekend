@@ -1,4 +1,4 @@
-use std::{ops::Deref, rc::Rc};
+use std::{ops::Deref, sync::Arc};
 
 use crate::{
     materials::material::{self, Material},
@@ -15,7 +15,7 @@ use super::aabb::AABB;
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material>,
     pub t: Precision,
     pub u: Precision,
     pub v: Precision,
@@ -42,7 +42,7 @@ impl Default for HitRecord {
         HitRecord {
             p: Default::default(),
             normal: Default::default(),
-            material: Rc::new(material::default_material()),
+            material: Arc::new(material::default_material()),
             t: Default::default(),
             u: Default::default(),
             v: Default::default(),
@@ -51,17 +51,17 @@ impl Default for HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self) -> AABB;
 }
 
-impl<T: Hittable> Hittable for Rc<T> {
+impl<T: Hittable + Send + Sync> Hittable for Arc<T> {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        Rc::deref(self).hit(r, ray_t, rec)
+        Arc::deref(self).hit(r, ray_t, rec)
     }
 
     fn bounding_box(&self) -> AABB {
-        Rc::deref(self).bounding_box()
+        Arc::deref(self).bounding_box()
     }
 }

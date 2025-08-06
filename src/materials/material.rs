@@ -15,6 +15,6 @@ pub fn default_material() -> Lambertian {
     Lambertian::default()
 }
 
-pub trait Material {
+pub trait Material: Send + Sync {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatteredRay>;
 }

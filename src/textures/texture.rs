@@ -3,7 +3,7 @@ use crate::utility::{
     vec3::{Point3, Precision},
 };
 
-pub trait Texture {
+pub trait Texture: Send + Sync {
     fn value(&self, u: Precision, v: Precision, p: Point3) -> Color;
 }
 

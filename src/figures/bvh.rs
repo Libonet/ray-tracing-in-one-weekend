@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, rc::Rc};
+use std::{cmp::Ordering, sync::Arc};
 
 use crate::utility::{interval::Interval, ray::Ray};
 
@@ -10,17 +10,17 @@ use super::{
 
 #[derive(Clone)]
 pub struct BvhNode {
-    left: Rc<dyn Hittable>,
-    right: Rc<dyn Hittable>,
+    left: Arc<dyn Hittable>,
+    right: Arc<dyn Hittable>,
     bbox: AABB,
 }
 
 impl BvhNode {
-    pub fn from_hitlist(list: HitList<Rc<dyn Hittable>>) -> Self {
+    pub fn from_hitlist(list: HitList<Arc<dyn Hittable>>) -> Self {
         Self::new(list.objects())
     }
 
-    pub fn new(mut objects: Vec<Rc<dyn Hittable>>) -> Self {
+    pub fn new(mut objects: Vec<Arc<dyn Hittable>>) -> Self {
         assert!(!objects.is_empty());
         let mut bbox = AABB::EMPTY;
         for object in objects.iter() {
@@ -49,17 +49,17 @@ impl BvhNode {
                 let left_vec = objects[..mid].to_vec();
                 let right_vec = objects[mid..].to_vec();
 
-                let left = Rc::new(BvhNode::new(left_vec));
-                let right = Rc::new(BvhNode::new(right_vec));
+                let left = Arc::new(BvhNode::new(left_vec));
+                let right = Arc::new(BvhNode::new(right_vec));
 
-                (left as Rc<dyn Hittable>, right as Rc<dyn Hittable>)
+                (left as Arc<dyn Hittable>, right as Arc<dyn Hittable>)
             }
         };
 
         Self { left, right, bbox }
     }
 
-    pub fn box_compare(a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>, axis: i32) -> Ordering {
+    pub fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: i32) -> Ordering {
         let a_axis_interval = a.bounding_box().axis_interval(axis);
         let b_axis_interval = b.bounding_box().axis_interval(axis);
 

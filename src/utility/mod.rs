@@ -5,14 +5,13 @@ pub mod ray;
 pub mod interval;
 
 pub mod utils {
-    // use std::f64::consts::PI as pi64;
-    pub use std::f32::consts::PI as pi32;
+    use std::f32::consts::PI;
 
     use super::vec3::Precision;
 
     #[inline(always)]
     pub fn degrees_to_radians(degrees: Precision) -> Precision {
-        degrees * pi32 / 180.0
+        degrees * PI / 180.0
     }
 
     #[inline(always)]

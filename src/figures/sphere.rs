@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{f32::consts::PI, sync::Arc};
 
 use crate::{
     materials::material::Material,
@@ -17,12 +17,12 @@ use super::{
 pub struct Sphere {
     center: Ray,
     radius: Precision,
-    mat: Rc<dyn Material>,
+    mat: Arc<dyn Material>,
     bbox: AABB,
 }
 
 impl Sphere {
-    pub fn new(static_center: Point3, radius: Precision, mat: Rc<dyn Material>) -> Self {
+    pub fn new(static_center: Point3, radius: Precision, mat: Arc<dyn Material>) -> Self {
         let center = Ray::new(static_center, Vec3::new(0., 0., 0.));
         let radius = Precision::max(0., radius);
 
@@ -39,7 +39,7 @@ impl Sphere {
         center1: Point3,
         center2: Point3,
         radius: Precision,
-        mat: Rc<dyn Material>,
+        mat: Arc<dyn Material>,
     ) -> Self {
         let center = Ray::new(center1, center2 - center1);
         let radius = Precision::max(0., radius);
@@ -56,6 +56,21 @@ impl Sphere {
             mat,
             bbox,
         }
+    }
+
+    pub fn get_sphere_uv(&self, p: Point3, u: &mut Precision, v: &mut Precision) {
+        // p: a given point on the sphere of radius one, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+        let theta = (-p.y()).acos();
+        let phi = (-p.z()).atan2(p.x()) + PI;
+
+        *u = phi / (2.*PI);
+        *v = theta / PI;
     }
 }
 
@@ -87,6 +102,7 @@ impl Hittable for Sphere {
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - current_center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
+        self.get_sphere_uv(outward_normal, &mut rec.u, &mut rec.v);
         rec.material = self.mat.clone();
 
         true
