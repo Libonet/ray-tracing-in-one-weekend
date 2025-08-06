@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{io::stdin, rc::Rc};
 
 use ray_tracing::{
     figures::{
@@ -16,24 +16,33 @@ use ray_tracing::{
     },
 };
 
+fn match_scene(scene: i32) {
+    match scene {
+        0 => eprintln!("INVALID ARGUMENT! Only input an integer to select a scene"),
+        1 => bouncing_spheres(),
+        2 => checkered_spheres(),
+        n => eprintln!("{n} is not a valid scene..."),
+    }
+}
+
 fn main() {
     let mut args = std::env::args();
 
+    // program name
     args.next();
 
-    eprintln!("Scenes:");
-    eprintln!("1: Bouncing spheres");
-    eprintln!("2: Checkered spheres");
-
     if let Some(arg) = args.next() {
-        match arg.parse().unwrap_or_default() {
-            0 => eprintln!("INVALID ARGUMENT! Only input an integer to select a scene"),
-            1 => bouncing_spheres(),
-            2 => checkered_spheres(),
-            n => eprintln!("{n} is not a valid scene..."),
-        }
+        match_scene(arg.parse().unwrap_or_default());
     } else {
-        eprintln!("No scene selected");
+        eprintln!("Scenes:");
+        eprintln!("1: Bouncing spheres");
+        eprintln!("2: Checkered spheres");
+
+        eprintln!("Choose a scene: ");
+        let stdin = stdin();
+        let mut input = String::with_capacity(2);
+        assert!(stdin.read_line(&mut input).is_ok());
+        match_scene(input.trim_end().parse().unwrap_or_default());
     }
 }
 
