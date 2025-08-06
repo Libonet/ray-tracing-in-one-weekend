@@ -17,6 +17,8 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub material: Rc<dyn Material>,
     pub t: Precision,
+    pub u: Precision,
+    pub v: Precision,
     pub front_face: bool,
 }
 
@@ -42,6 +44,8 @@ impl Default for HitRecord {
             normal: Default::default(),
             material: Rc::new(material::default_material()),
             t: Default::default(),
+            u: Default::default(),
+            v: Default::default(),
             front_face: Default::default(),
         }
     }

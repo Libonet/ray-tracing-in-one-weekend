@@ -8,6 +8,7 @@ use ray_tracing::{
         sphere::Sphere,
     },
     materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
+    textures::checker::CheckerTexture,
     utility::{
         color::Color,
         utils::random_f32,
@@ -16,6 +17,58 @@ use ray_tracing::{
 };
 
 fn main() {
+    let mut args = std::env::args();
+
+    args.next();
+
+    eprintln!("Scenes:");
+    eprintln!("1: Bouncing spheres");
+    eprintln!("2: Checkered spheres");
+
+    if let Some(arg) = args.next() {
+        match arg.parse().unwrap_or_default() {
+            0 => eprintln!("INVALID ARGUMENT! Only input an integer to select a scene"),
+            1 => bouncing_spheres(),
+            2 => checkered_spheres(),
+            n => eprintln!("{n} is not a valid scene..."),
+        }
+    } else {
+        eprintln!("No scene selected");
+    }
+}
+
+fn checkered_spheres() {
+    let mut world = HitList::new();
+
+    let checker = Rc::new(CheckerTexture::from_colors(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+
+    world.push(Rc::new(Sphere::new(
+        Point3::new(0., -10., 0.),
+        10.,
+        Rc::new(Lambertian::from_texture(checker.clone())),
+    )));
+    world.push(Rc::new(Sphere::new(
+        Point3::new(0., 10., 0.),
+        10.,
+        Rc::new(Lambertian::from_texture(checker)),
+    )));
+
+    let view_settings = ViewSettings {
+        vfov: 20.,
+        look_from: Point3::new(13., 2., 3.),
+        look_at: Point3::new(0., 0., 0.),
+        vup: Vec3::new(0., 1., 0.),
+    };
+    let cam = Camera::new(ImageSettings::default(), view_settings, DefocusSettings::default());
+
+    cam.render(&world);
+}
+
+fn bouncing_spheres() {
     // Camera
 
     let image_settings = ImageSettings {
@@ -40,7 +93,12 @@ fn main() {
 
     let mut world = HitList::new();
 
-    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Rc::new(CheckerTexture::from_colors(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+    let ground_material = Rc::new(Lambertian::from_texture(checker));
     world.push(Rc::new(Sphere::new(
         Point3::new(0., -1000., 0.),
         1000.,

@@ -1,15 +1,21 @@
-use crate::{figures::hittable::HitRecord, utility::{color::Color, ray::Ray, vec3::Vec3}};
+use std::rc::Rc;
+
+use crate::{figures::hittable::HitRecord, textures::texture::{SolidColor, Texture}, utility::{color::Color, ray::Ray, vec3::Vec3}};
 
 use super::material::{Material, ScatteredRay};
 
-#[derive(Debug, Clone, Default, PartialEq, PartialOrd)]
+#[derive(Clone)]
 pub struct Lambertian {
-    albedo: Color,
+    tex: Rc<dyn Texture>,
 }
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+        Self { tex: Rc::new(SolidColor::new(albedo)) }
+    }
+
+    pub fn from_texture(tex: Rc<dyn Texture>) -> Self {
+        Self { tex }
     }
 }
 
@@ -24,7 +30,13 @@ impl Material for Lambertian {
 
         Some(ScatteredRay {
             ray: Ray::with_time(rec.p, scatter_direction, ray.time()),
-            attenuation: self.albedo,
+            attenuation: self.tex.value(rec.u, rec.v, rec.p),
         })
+    }
+}
+
+impl Default for Lambertian {
+    fn default() -> Self {
+        Lambertian::new(Color::default())
     }
 }
