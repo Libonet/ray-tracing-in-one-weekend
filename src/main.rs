@@ -8,7 +8,7 @@ use ray_tracing::{
         sphere::Sphere,
     },
     materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
-    textures::checker::CheckerTexture,
+    textures::{checker::CheckerTexture, image::ImageTexture},
     utility::{
         color::Color,
         utils::random_f32,
@@ -21,6 +21,7 @@ fn match_scene(scene: i32) {
         0 => eprintln!("INVALID ARGUMENT! Only input an integer to select a scene"),
         1 => bouncing_spheres(),
         2 => checkered_spheres(),
+        3 => earth(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -37,13 +38,30 @@ fn main() {
         eprintln!("Scenes:");
         eprintln!("1: Bouncing spheres");
         eprintln!("2: Checkered spheres");
+        eprintln!("3: Earth");
 
         eprintln!("Choose a scene: ");
         let stdin = stdin();
-        let mut input = String::with_capacity(2);
+        let mut input = String::with_capacity(5);
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
     }
+}
+
+fn earth() {
+    let earth_texture = Arc::new(ImageTexture::new("earthmap.jpg"));
+    let earth_surface = Arc::new(Lambertian::from_texture(earth_texture));
+    let globe = Arc::new(Sphere::new(Point3::new(0.,0.,0.), 2., earth_surface));
+
+    let view_settings = ViewSettings {
+        vfov: 20.,
+        look_from: Point3::new(0., 0., 12.),
+        look_at: Point3::new(0., 0., 0.),
+        vup: Vec3::new(0., 1., 0.),
+    };
+    let cam = Camera::new(ImageSettings::default(), view_settings, DefocusSettings::default());
+
+    cam.render(&globe);
 }
 
 fn checkered_spheres() {
