@@ -32,12 +32,10 @@ impl PPM {
                     .map(|col| {
                         gen(row as Precision, col as Precision)
                     })
-                    .collect()
+                    .collect::<Vec<Color>>()
             })
-            .reduce(Vec::new, |mut acc, mut val| {
-                acc.append(&mut val);
-                acc
-            });
+            .flatten()
+            .collect();
 
         eprintln!("Done! :D");
 
