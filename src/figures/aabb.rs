@@ -8,26 +8,29 @@ pub struct AABB {
 }
 
 impl AABB {
-    pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
+    pub fn new(mut x: Interval, mut y: Interval, mut z: Interval) -> Self {
+        pad_to_minimums(&mut x, &mut y, &mut z);
         Self { x, y, z }
     }
 
     pub fn from_points(a: Point3, b: Point3) -> Self {
-        let x = if a.x() <= b.x() {
+        let mut x = if a.x() <= b.x() {
             Interval::new(a.x(), b.x())
         } else {
             Interval::new(b.x(), a.x())
         };
-        let y = if a.y() <= b.y() {
+        let mut y = if a.y() <= b.y() {
             Interval::new(a.y(), b.y())
         } else {
             Interval::new(b.y(), a.y())
         };
-        let z = if a.z() <= b.z() {
+        let mut z = if a.z() <= b.z() {
             Interval::new(a.z(), b.z())
         } else {
             Interval::new(b.z(), a.z())
         };
+
+        pad_to_minimums(&mut x, &mut y, &mut z);
 
         Self { x, y, z }
     }
@@ -105,4 +108,12 @@ impl AABB {
         y: Interval::UNIVERSE,
         z: Interval::UNIVERSE,
     };
+}
+
+fn pad_to_minimums(x: &mut Interval, y: &mut Interval, z: &mut Interval) {
+    let delta = 0.0001;
+
+    if x.size() < delta { *x = x.expand(delta); }
+    if y.size() < delta { *y = y.expand(delta); }
+    if z.size() < delta { *z = z.expand(delta); }
 }

@@ -5,6 +5,7 @@ use ray_tracing::{
         bvh::BvhNode,
         camera::{Camera, DefocusSettings, ImageSettings, ViewSettings},
         hittable_list::HitList,
+        quad::Quad,
         sphere::Sphere,
     },
     materials::{dielectric::Dielectric, lambertian::Lambertian, material::Material, metal::Metal},
@@ -24,6 +25,7 @@ fn match_scene(scene: i32) {
         3 => earth(),
         4 => perlin_spheres(),
         5 => weekend_final(),
+        6 => quads(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -43,6 +45,7 @@ fn main() {
         eprintln!("3: Earth");
         eprintln!("4: Perlin spheres");
         eprintln!("5: Final render of the weekend");
+        eprintln!("6: Quads scene");
 
         eprintln!("Choose a scene: ");
         let stdin = stdin();
@@ -50,6 +53,69 @@ fn main() {
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
     }
+}
+
+fn quads() {
+    let mut world = HitList::new();
+
+    // Materials
+    let left_red = Arc::new(Lambertian::new(Color::new(1., 0.2, 0.2)));
+    let back_green = Arc::new(Lambertian::new(Color::new(0.2, 1., 0.2)));
+    let right_blue = Arc::new(Lambertian::new(Color::new(0.2, 0.2, 1.0)));
+    let upper_orange = Arc::new(Lambertian::new(Color::new(1., 0.5, 0.)));
+    let lower_teal = Arc::new(Lambertian::new(Color::new(0.2, 0.8, 0.8)));
+
+    // Quads
+    world.push(Arc::new(Quad::new(
+        Point3::new(-3., -2., 5.),
+        Vec3::new(0., 0., -4.),
+        Vec3::new(0., 4., 0.),
+        left_red.clone(),
+    )));
+    world.push(Arc::new(Quad::new(
+        Point3::new(-2., -2., 0.),
+        Vec3::new(4., 0., 0.),
+        Vec3::new(0., 4., 0.),
+        back_green.clone(),
+    )));
+    world.push(Arc::new(Quad::new(
+        Point3::new(3., -2., 1.),
+        Vec3::new(0., 0., 4.),
+        Vec3::new(0., 4., 0.),
+        right_blue.clone(),
+    )));
+    world.push(Arc::new(Quad::new(
+        Point3::new(-2., 3., 1.),
+        Vec3::new(4., 0., 0.),
+        Vec3::new(0., 0., 4.),
+        upper_orange.clone(),
+    )));
+    world.push(Arc::new(Quad::new(
+        Point3::new(-2., -3., 5.),
+        Vec3::new(4., 0., 0.),
+        Vec3::new(0., 0., -4.),
+        lower_teal.clone(),
+    )));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 1.,
+        image_width: 400,
+        samples_per_pixel: 100,
+        max_depth: 50,
+    };
+    let view_settings = ViewSettings {
+        vfov: 80.,
+        look_from: Point3::new(0., 0., 9.),
+        look_at: Point3::new(0., 0., 0.),
+        vup: Vec3::new(0., 1., 0.),
+    };
+    let cam = Camera::new(
+        image_settings,
+        view_settings,
+        DefocusSettings::default(),
+    );
+
+    cam.render(&world);
 }
 
 fn weekend_final() {

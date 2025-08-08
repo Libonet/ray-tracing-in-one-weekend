@@ -4,3 +4,4 @@ pub mod camera;
 pub mod aabb;
 pub mod hittable_list;
 pub mod bvh;
+pub mod quad;
