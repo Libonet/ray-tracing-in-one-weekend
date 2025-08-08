@@ -3,6 +3,7 @@ pub mod vec3;
 pub mod color;
 pub mod ray;
 pub mod interval;
+pub mod perlin;
 
 pub mod utils {
     use std::f32::consts::PI;
