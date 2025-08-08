@@ -7,7 +7,7 @@ use ray_tracing::{
         hittable_list::HitList,
         sphere::Sphere,
     },
-    materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
+    materials::{dielectric::Dielectric, lambertian::Lambertian, material::Material, metal::Metal},
     textures::{checker::CheckerTexture, image::ImageTexture, noise::NoiseTexture},
     utility::{
         color::Color,
@@ -23,6 +23,7 @@ fn match_scene(scene: i32) {
         2 => checkered_spheres(),
         3 => earth(),
         4 => perlin_spheres(),
+        5 => weekend_final(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -41,6 +42,7 @@ fn main() {
         eprintln!("2: Checkered spheres");
         eprintln!("3: Earth");
         eprintln!("4: Perlin spheres");
+        eprintln!("5: Final render of the weekend");
 
         eprintln!("Choose a scene: ");
         let stdin = stdin();
@@ -48,6 +50,96 @@ fn main() {
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
     }
+}
+
+fn weekend_final() {
+    // Camera
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 16. / 9.,
+        image_width: 1200,
+        samples_per_pixel: 500,
+        max_depth: 50,
+    };
+    let view_settings = ViewSettings {
+        vfov: 20.,
+        look_from: Point3::new(13., 2., 3.),
+        look_at: Point3::new(0., 0., 0.),
+        vup: Vec3::new(0., 1., 0.),
+    };
+    let defocus_settings = DefocusSettings {
+        defocus_angle: 0.6,
+        focus_dist: 10.,
+    };
+    let camera = Camera::new(image_settings, view_settings, defocus_settings);
+
+    // World
+
+    let mut world = HitList::new();
+
+    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.push(Arc::new(Sphere::new(
+        Point3::new(0., -1000., 0.),
+        1000.,
+        ground_material.clone(),
+    )));
+
+    // glass.
+    let material_1 = Arc::new(Dielectric::new(1.5));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = fastrand::f32();
+            let center = Point3::new(
+                a as Precision + 0.9 * fastrand::f32(),
+                0.2,
+                b as Precision + 0.9 * fastrand::f32(),
+            );
+
+            if (center - Point3::new(4., 0.2, 0.)).len() > 0.9 {
+                let sphere_material: Arc<dyn Material> = if choose_mat < 0.8 {
+                    // diffuse.
+
+                    let albedo = Color::random() * Color::random();
+                    Arc::new(Lambertian::new(albedo))
+                } else if choose_mat < 0.95 {
+                    // metal.
+
+                    let albedo = Color::random_bounded(0.5, 1.);
+                    let fuzz = random_f32(0., 0.5);
+                    Arc::new(Metal::new(albedo, fuzz))
+                } else {
+                    // glass.
+
+                    material_1.clone()
+                };
+
+                world.push(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+            }
+        }
+    }
+
+    world.push(Arc::new(Sphere::new(
+        Point3::new(0., 1., 0.),
+        1.,
+        material_1.clone(),
+    )));
+
+    let material_2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    world.push(Arc::new(Sphere::new(
+        Point3::new(-4., 1., 0.),
+        1.,
+        material_2.clone(),
+    )));
+
+    let material_3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.));
+    world.push(Arc::new(Sphere::new(
+        Point3::new(4., 1., 0.),
+        1.,
+        material_3.clone(),
+    )));
+
+    camera.render(&world);
 }
 
 fn perlin_spheres() {
