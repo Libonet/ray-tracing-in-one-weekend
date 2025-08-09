@@ -1,7 +1,8 @@
-pub mod hittable;
-pub mod sphere;
-pub mod camera;
 pub mod aabb;
-pub mod hittable_list;
 pub mod bvh;
+pub mod camera;
+pub mod cube;
+pub mod hittable;
+pub mod hittable_list;
 pub mod quad;
+pub mod sphere;

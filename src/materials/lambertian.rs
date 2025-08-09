@@ -1,7 +1,10 @@
-
 use std::sync::Arc;
 
-use crate::{figures::hittable::HitRecord, textures::texture::{SolidColor, Texture}, utility::{color::Color, ray::Ray, vec3::Vec3}};
+use crate::{
+    figures::hittable::HitRecord,
+    textures::texture::{SolidColor, Texture},
+    utility::{color::Color, ray::Ray, vec3::Vec3},
+};
 
 use super::material::{Material, ScatteredRay};
 
@@ -12,7 +15,9 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self { tex: Arc::new(SolidColor::new(albedo)) }
+        Self {
+            tex: Arc::new(SolidColor::new(albedo)),
+        }
     }
 
     pub fn from_texture(tex: Arc<dyn Texture>) -> Self {

@@ -1,4 +1,7 @@
-use std::{fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign}};
+use std::{
+    fmt::Display,
+    ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign},
+};
 
 use super::utils::random_f32;
 
@@ -33,7 +36,7 @@ impl Vec3 {
     }
 
     pub fn len_square(&self) -> Precision {
-        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)    
+        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
 
     pub fn near_zero(&self) -> bool {
@@ -43,11 +46,19 @@ impl Vec3 {
     }
 
     pub fn random() -> Self {
-        Self { x: fastrand::f32(), y: fastrand::f32(), z: fastrand::f32() }
+        Self {
+            x: fastrand::f32(),
+            y: fastrand::f32(),
+            z: fastrand::f32(),
+        }
     }
 
     pub fn random_bounded(min: Precision, max: Precision) -> Self {
-        Self { x: random_f32(min, max), y: random_f32(min, max), z: random_f32(min, max) }
+        Self {
+            x: random_f32(min, max),
+            y: random_f32(min, max),
+            z: random_f32(min, max),
+        }
     }
 
     pub fn dot(&self, rhs: &Vec3) -> Precision {
@@ -55,7 +66,7 @@ impl Vec3 {
     }
 
     pub fn cross(&self, rhs: &Vec3) -> Self {
-        Self { 
+        Self {
             x: self.y * rhs.z - self.z * rhs.y,
             y: self.z * rhs.x - self.x * rhs.z,
             z: self.x * rhs.y - self.y * rhs.x,
@@ -142,7 +153,7 @@ impl Sub for Vec3 {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
-        }    
+        }
     }
 }
 
@@ -168,7 +179,7 @@ impl Neg for Vec3 {
 
 impl Index<i32> for Vec3 {
     type Output = Precision;
-    
+
     fn index(&self, index: i32) -> &Self::Output {
         match index {
             0 => &self.x,
@@ -192,7 +203,7 @@ impl IndexMut<i32> for Vec3 {
 
 impl Mul for Vec3 {
     type Output = Vec3;
-    
+
     fn mul(self, rhs: Self) -> Self::Output {
         Self {
             x: self.x * rhs.x,

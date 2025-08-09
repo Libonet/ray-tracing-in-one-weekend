@@ -37,6 +37,6 @@ impl Ray {
     }
 
     pub fn at(&self, t: Precision) -> Point3 {
-        self.orig + t*self.dir
+        self.orig + t * self.dir
     }
 }

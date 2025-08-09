@@ -1,8 +1,9 @@
-use crate::{figures::hittable::HitRecord, utility::{color::Color, ray::Ray, vec3::Precision}};
+use crate::{
+    figures::hittable::HitRecord,
+    utility::{color::Color, ray::Ray, vec3::Precision},
+};
 
 use super::material::{Material, ScatteredRay};
-
-
 
 pub struct Dielectric {
     refraction_index: Precision,
@@ -17,7 +18,11 @@ impl Dielectric {
 impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatteredRay> {
         let attenuation = Color::new(1., 1., 1.);
-        let ri = if rec.front_face { 1. / self.refraction_index } else { self.refraction_index };
+        let ri = if rec.front_face {
+            1. / self.refraction_index
+        } else {
+            self.refraction_index
+        };
 
         let unit_direction = ray.direction().unit_vec();
         let cos_theta = (-unit_direction).dot(&rec.normal).clamp(-1., 1.);
@@ -33,6 +38,9 @@ impl Material for Dielectric {
 
         let scattered = Ray::with_time(rec.p, direction, ray.time());
 
-        Some(ScatteredRay { ray: scattered, attenuation })
+        Some(ScatteredRay {
+            ray: scattered,
+            attenuation,
+        })
     }
 }

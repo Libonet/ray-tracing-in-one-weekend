@@ -24,7 +24,7 @@ impl<T> HitList<T> {
     pub fn clear(&mut self) {
         self.list.clear();
         self.bbox = AABB::default();
-    } 
+    }
 
     pub fn objects(self) -> Vec<T> {
         self.list

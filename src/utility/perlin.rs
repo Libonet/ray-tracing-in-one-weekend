@@ -20,7 +20,7 @@ impl PerlinNoise {
             *val = Vec3::random_bounded(-1., 1.).unit_vec();
         }
 
-        let mut perm_x = [0; POINT_COUNT]; 
+        let mut perm_x = [0; POINT_COUNT];
         let mut perm_y = [0; POINT_COUNT];
         let mut perm_z = [0; POINT_COUNT];
 
@@ -50,14 +50,14 @@ impl PerlinNoise {
         for di in 0..2i32 {
             for dj in 0..2i32 {
                 for dk in 0..2i32 {
-                    let ii = (i+di) & (POINT_COUNT-1) as i32;
-                    let jj = (j+dj) & (POINT_COUNT-1) as i32;
-                    let kk = (k+dk) & (POINT_COUNT-1) as i32;
-                    c[di as usize][dj as usize][dk as usize] = self.randvec[(
-                        self.perm_x[ii as usize] ^
-                        self.perm_y[jj as usize] ^
-                        self.perm_z[kk as usize]
-                    ) as usize]
+                    let ii = (i + di) & (POINT_COUNT - 1) as i32;
+                    let jj = (j + dj) & (POINT_COUNT - 1) as i32;
+                    let kk = (k + dk) & (POINT_COUNT - 1) as i32;
+                    c[di as usize][dj as usize][dk as usize] = self.randvec[(self.perm_x
+                        [ii as usize]
+                        ^ self.perm_y[jj as usize]
+                        ^ self.perm_z[kk as usize])
+                        as usize]
                 }
             }
         }
@@ -95,18 +95,19 @@ fn permute(p: &mut [i32; POINT_COUNT]) {
 }
 
 fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], u: Precision, v: Precision, w: Precision) -> Precision {
-    let uu = u*u*(3. - 2.*u);
-    let vv = v*v*(3. - 2.*v);
-    let ww = w*w*(3. - 2.*w);
+    let uu = u * u * (3. - 2. * u);
+    let vv = v * v * (3. - 2. * v);
+    let ww = w * w * (3. - 2. * w);
     let mut accum = 0.;
 
     for i in 0..2 {
         for j in 0..2 {
             for k in 0..2 {
-                let weight_v = Vec3::new(u - i as Precision, v - j as Precision, w - k as Precision);
-                accum += (i as Precision *uu + (1-i) as Precision * (1.-uu))
-                    * (j as Precision *vv + (1-j) as Precision * (1.-vv))
-                    * (k as Precision *ww + (1-k) as Precision * (1.-ww))
+                let weight_v =
+                    Vec3::new(u - i as Precision, v - j as Precision, w - k as Precision);
+                accum += (i as Precision * uu + (1 - i) as Precision * (1. - uu))
+                    * (j as Precision * vv + (1 - j) as Precision * (1. - vv))
+                    * (k as Precision * ww + (1 - k) as Precision * (1. - ww))
                     * c[i][j][k].dot(&weight_v);
             }
         }

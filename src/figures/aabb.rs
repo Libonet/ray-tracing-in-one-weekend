@@ -113,7 +113,13 @@ impl AABB {
 fn pad_to_minimums(x: &mut Interval, y: &mut Interval, z: &mut Interval) {
     let delta = 0.0001;
 
-    if x.size() < delta { *x = x.expand(delta); }
-    if y.size() < delta { *y = y.expand(delta); }
-    if z.size() < delta { *z = z.expand(delta); }
+    if x.size() < delta {
+        *x = x.expand(delta);
+    }
+    if y.size() < delta {
+        *y = y.expand(delta);
+    }
+    if z.size() < delta {
+        *z = z.expand(delta);
+    }
 }

@@ -156,7 +156,8 @@ impl Camera {
 
         // Calculate the camera defocus disk basis vectors.
 
-        let defocus_radius = defocus_settings.focus_dist * degrees_to_radians(defocus_settings.defocus_angle / 2.).tan();
+        let defocus_radius = defocus_settings.focus_dist
+            * degrees_to_radians(defocus_settings.defocus_angle / 2.).tan();
         let defocus_disk_u = u * defocus_radius;
         let defocus_disk_v = v * defocus_radius;
 
@@ -230,13 +231,16 @@ impl Camera {
     /// Construct a camera ray originating from the defocus disk and directed at randomly
     /// sampled point around the pixel location i, j.
     fn get_ray(&self, i: i32, j: i32) -> Ray {
-
         let offset = Camera::sample_square();
         let pixel_center = self.pixel00_loc
             + ((i as Precision + offset.x()) * self.pixel_delta_u)
             + ((j as Precision + offset.y()) * self.pixel_delta_v);
 
-        let ray_origin = if self.defocus_angle <= 0. { self.center } else { self.defocus_disk_sample() };
+        let ray_origin = if self.defocus_angle <= 0. {
+            self.center
+        } else {
+            self.defocus_disk_sample()
+        };
         let ray_direction = pixel_center - ray_origin;
         let ray_time = fastrand::f32();
 

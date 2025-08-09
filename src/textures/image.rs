@@ -45,7 +45,7 @@ impl Texture for ImageTexture {
 
         let pixel = self.0.get_pixel(i as u32, j as u32).0;
         let mut p = [0.; 3];
-        for (i,val) in pixel.iter().enumerate() {
+        for (i, val) in pixel.iter().enumerate() {
             let v = *val as f32 / 255.;
             // Convert from sRGB to linear
             p[i] = v.powf(2.2);
