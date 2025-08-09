@@ -1,6 +1,6 @@
 use crate::{
     figures::hittable::HitRecord,
-    utility::{color::Color, ray::Ray},
+    utility::{color::Color, ray::Ray, vec3::{Point3, Precision}},
 };
 
 use super::lambertian::Lambertian;
@@ -17,4 +17,8 @@ pub fn default_material() -> Lambertian {
 
 pub trait Material: Send + Sync {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatteredRay>;
+
+    fn emitted(&self, _u: Precision, _v: Precision, _p: Point3) -> Color {
+        Color::new(0., 0., 0.)
+    }
 }

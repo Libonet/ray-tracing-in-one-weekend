@@ -16,6 +16,7 @@ pub struct ImageSettings {
     pub image_width: i32,
     pub samples_per_pixel: i32,
     pub max_depth: i32,
+    pub background: Color,
 }
 
 impl Default for ImageSettings {
@@ -24,12 +25,14 @@ impl Default for ImageSettings {
         let image_width = 400;
         let samples_per_pixel = 100;
         let max_depth = 50;
+        let background = Color::new(0.7, 0.8, 1.);
 
         Self {
             aspect_ratio,
             image_width,
             samples_per_pixel,
             max_depth,
+            background,
         }
     }
 }
@@ -77,12 +80,14 @@ impl Default for DefocusSettings {
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Camera {
-    // Inputs.
+    // Image settings.
     aspect_ratio: Precision,
     image_width: i32,
     samples_per_pixel: i32,
     max_depth: i32,
+    background: Color,
 
+    // View settings.
     vfov: Precision,
     look_from: Point3,
     look_at: Point3,
@@ -101,7 +106,7 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
 
-    // Defocus.
+    // Defocus settings.
     defocus_angle: Precision,
     focus_dist: Precision,
     defocus_disk_u: Vec3,
@@ -166,6 +171,7 @@ impl Camera {
             image_width: image_settings.image_width,
             samples_per_pixel: image_settings.samples_per_pixel,
             max_depth: image_settings.max_depth,
+            background: image_settings.background,
             vfov: view_settings.vfov,
             look_from: view_settings.look_from,
             look_at: view_settings.look_at,
@@ -199,7 +205,7 @@ impl Camera {
 
                 for _sample in 0..self.samples_per_pixel {
                     let r = self.get_ray(col as i32, row as i32);
-                    pixel_color += Camera::ray_color(&r, self.max_depth, world);
+                    pixel_color += self.ray_color(&r, self.max_depth, world);
                 }
 
                 self.pixel_samples_scale * pixel_color
@@ -209,23 +215,28 @@ impl Camera {
         ppm.output();
     }
 
-    fn ray_color(r: &Ray, depth: i32, world: &dyn Hittable) -> Color {
+    fn ray_color(&self, r: &Ray, depth: i32, world: &dyn Hittable) -> Color {
         if depth <= 0 {
             return Color::new(0., 0., 0.);
         }
 
         let mut rec = HitRecord::default();
-        if world.hit(r, Interval::new(0.001, Precision::INFINITY), &mut rec) {
-            if let Some(scattered_ray) = rec.material.scatter(r, &rec) {
-                return scattered_ray.attenuation
-                    * Camera::ray_color(&scattered_ray.ray, depth - 1, world);
-            }
-            return Color::new(0., 0., 0.);
+
+        if !world.hit(r, Interval::new(0.001, Precision::INFINITY), &mut rec) {
+            return self.background;
         }
 
-        let unit_direction = r.direction().unit_vec();
-        let a = 0.5 * (unit_direction.y() + 1.0);
-        lerp(Color::new(1.0, 1.0, 1.0), Color::new(0.5, 0.7, 1.0), a)
+        let color_from_emission = rec.material.emitted(rec.u, rec.v, rec.p);
+
+        let scattered_ray = rec.material.scatter(r, &rec);
+        if scattered_ray.is_none() {
+            return color_from_emission;
+        }
+
+        let scaterred_ray = scattered_ray.unwrap();
+        let color_from_scatter = scaterred_ray.attenuation * self.ray_color(&scaterred_ray.ray, depth-1, world);
+
+        color_from_emission + color_from_scatter
     }
 
     /// Construct a camera ray originating from the defocus disk and directed at randomly

@@ -9,7 +9,10 @@ use ray_tracing::{
         quad::{QDisk, QRect, QTri},
         sphere::Sphere,
     },
-    materials::{dielectric::Dielectric, lambertian::Lambertian, material::Material, metal::Metal},
+    materials::{
+        dielectric::Dielectric, emissive::DiffuseLight, lambertian::Lambertian, material::Material,
+        metal::Metal,
+    },
     textures::{checker::CheckerTexture, image::ImageTexture, noise::NoiseTexture},
     utility::{
         color::Color,
@@ -28,6 +31,7 @@ fn match_scene(scene: i32) {
         5 => weekend_final(),
         6 => quads(),
         7 => cube(),
+        8 => simple_light(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -49,6 +53,7 @@ fn main() {
         eprintln!("5: Final render of the weekend");
         eprintln!("6: Quads scene");
         eprintln!("7: Single cube");
+        eprintln!("8: Simple light");
 
         eprintln!("Choose a scene: ");
         let stdin = stdin();
@@ -56,6 +61,48 @@ fn main() {
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
     }
+}
+
+fn simple_light() {
+    let mut world = HitList::new();
+
+    let pertext = Arc::new(NoiseTexture::new(4.));
+    let mat = Arc::new(Lambertian::from_texture(pertext.clone()));
+    world.push(Arc::new(Sphere::new(
+        Point3::new(0., -1000., 0.),
+        1000.,
+        mat.clone(),
+    )));
+    world.push(Arc::new(Sphere::new(
+        Point3::new(0., 2., 0.),
+        2.,
+        mat.clone(),
+    )));
+
+    let difflight = Arc::new(DiffuseLight::from_color(Color::new(4., 4., 4.)));
+    world.push(Arc::new(QRect::new(
+        Point3::new(3., 1., -2.),
+        Vec3::new(2., 0., 0.),
+        Vec3::new(0., 2., 0.),
+        difflight.clone(),
+    )));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 16. / 9.,
+        image_width: 400,
+        samples_per_pixel: 100,
+        max_depth: 50,
+        background: Color::new(0., 0., 0.),
+    };
+    let view_settings = ViewSettings {
+        vfov: 20.,
+        look_from: Point3::new(26., 3., 6.),
+        look_at: Point3::new(0., 2., 0.),
+        vup: Vec3::new(0., 1., 0.),
+    };
+    let cam = Camera::new(image_settings, view_settings, DefocusSettings::default());
+
+    cam.render(&world);
 }
 
 fn cube() {
@@ -74,6 +121,7 @@ fn cube() {
         image_width: 400,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.),
     };
     let view_settings = ViewSettings {
         vfov: 80.,
@@ -133,6 +181,7 @@ fn quads() {
         image_width: 400,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.),
     };
     let view_settings = ViewSettings {
         vfov: 80.,
@@ -153,6 +202,7 @@ fn weekend_final() {
         image_width: 1200,
         samples_per_pixel: 500,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.),
     };
     let view_settings = ViewSettings {
         vfov: 20.,
@@ -329,6 +379,7 @@ fn bouncing_spheres() {
         image_width: 400,
         samples_per_pixel: 100,
         max_depth: 50,
+        background: Color::new(0.7, 0.8, 1.),
     };
     let view_settings = ViewSettings {
         vfov: 20.,
