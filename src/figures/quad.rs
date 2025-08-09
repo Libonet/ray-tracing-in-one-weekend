@@ -1,11 +1,15 @@
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use crate::{materials::material::Material, utility::{interval::Interval, vec3::{Point3, Precision, Vec3}}};
 
 use super::{aabb::AABB, hittable::Hittable};
 
+pub trait QuadPrimitive: Send + Sync {
+    fn is_interior(alpha: Precision, beta: Precision, rec: &mut super::hittable::HitRecord) -> bool;
+}
+
 #[derive(Clone)]
-pub struct Quad {
+pub struct Quad<T: QuadPrimitive> {
     q: Point3,
     u: Vec3,
     v: Vec3,
@@ -14,9 +18,11 @@ pub struct Quad {
     normal: Vec3,
     d: Precision,
     w: Vec3,
+
+    phantom: PhantomData<T>,
 }
 
-impl Quad {
+impl<T: QuadPrimitive> Quad<T> {
     pub fn new(q: Point3, u: Vec3, v: Vec3, mat: Arc<dyn Material>) -> Self {
         let bbox = set_bounding_box(q, u, v);
 
@@ -25,7 +31,7 @@ impl Quad {
         let d = normal.dot(&q);
         let w = n / n.dot(&n);
 
-        Self { q, u, v, mat, bbox, normal, d, w }
+        Self { q, u, v, mat, bbox, normal, d, w, phantom: PhantomData }
     }
 }
 
@@ -37,7 +43,7 @@ fn set_bounding_box(q: Point3, u: Vec3, v: Vec3) -> AABB {
     bbox_diagonal1
 }
 
-impl Hittable for Quad {
+impl<T: QuadPrimitive> Hittable for Quad<T> {
     fn hit(&self, r: &crate::utility::ray::Ray, ray_t: crate::utility::interval::Interval, rec: &mut super::hittable::HitRecord) -> bool {
         let denom = self.normal.dot(r.direction());
 
@@ -53,7 +59,7 @@ impl Hittable for Quad {
         let alpha = self.w.dot(&planar_hitpt_vector.cross(&self.v));
         let beta = self.w.dot(&self.u.cross(&planar_hitpt_vector));
 
-        if !is_interior(alpha, beta, rec) {
+        if !T::is_interior(alpha, beta, rec) {
             return false;
         }
 
@@ -70,20 +76,40 @@ impl Hittable for Quad {
     }
 }
 
-fn is_interior(alpha: Precision, beta: Precision, rec: &mut super::hittable::HitRecord) -> bool {
-    let unit_interval = Interval::new(0., 1.);
-    // Given the hit point in plane coordinates, return false if it is outside the
-    // primitive, otherwise set the hit record UV coordinates and return true.
+pub struct Rect;
+pub type QRect = Quad<Rect>;
 
-    if !unit_interval.contains(alpha) || !unit_interval.contains(beta) {
-        return false;
+impl QuadPrimitive for Rect {
+    fn is_interior(alpha: Precision, beta: Precision, rec: &mut super::hittable::HitRecord) -> bool {
+        let unit_interval = Interval::new(0., 1.);
+        // Given the hit point in plane coordinates, return false if it is outside the
+        // primitive, otherwise set the hit record UV coordinates and return true.
+
+        if !unit_interval.contains(alpha) || !unit_interval.contains(beta) {
+            return false;
+        }
+
+        rec.u = alpha;
+        rec.v = beta;
+
+        true
     }
-
-    rec.u = alpha;
-    rec.v = beta;
-
-    true
 }
 
+pub struct Tri;
+pub type QTri = Quad<Tri>;
+
+impl QuadPrimitive for Tri {
+    fn is_interior(alpha: Precision, beta: Precision, rec: &mut super::hittable::HitRecord) -> bool {
+        if alpha <= 0. || beta <= 0. || alpha + beta >= 1. {
+            return false;
+        }
+
+        rec.u = alpha;
+        rec.v = beta;
+
+        true
+    }
+}
 
 

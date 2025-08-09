@@ -5,7 +5,7 @@ use ray_tracing::{
         bvh::BvhNode,
         camera::{Camera, DefocusSettings, ImageSettings, ViewSettings},
         hittable_list::HitList,
-        quad::Quad,
+        quad::{QRect, QTri},
         sphere::Sphere,
     },
     materials::{dielectric::Dielectric, lambertian::Lambertian, material::Material, metal::Metal},
@@ -66,31 +66,31 @@ fn quads() {
     let lower_teal = Arc::new(Lambertian::new(Color::new(0.2, 0.8, 0.8)));
 
     // Quads
-    world.push(Arc::new(Quad::new(
+    world.push(Arc::new(QRect::new(
         Point3::new(-3., -2., 5.),
         Vec3::new(0., 0., -4.),
         Vec3::new(0., 4., 0.),
         left_red.clone(),
     )));
-    world.push(Arc::new(Quad::new(
+    world.push(Arc::new(QTri::new(
         Point3::new(-2., -2., 0.),
         Vec3::new(4., 0., 0.),
         Vec3::new(0., 4., 0.),
         back_green.clone(),
     )));
-    world.push(Arc::new(Quad::new(
+    world.push(Arc::new(QRect::new(
         Point3::new(3., -2., 1.),
         Vec3::new(0., 0., 4.),
         Vec3::new(0., 4., 0.),
         right_blue.clone(),
     )));
-    world.push(Arc::new(Quad::new(
+    world.push(Arc::new(QRect::new(
         Point3::new(-2., 3., 1.),
         Vec3::new(4., 0., 0.),
         Vec3::new(0., 0., 4.),
         upper_orange.clone(),
     )));
-    world.push(Arc::new(Quad::new(
+    world.push(Arc::new(QRect::new(
         Point3::new(-2., -3., 5.),
         Vec3::new(4., 0., 0.),
         Vec3::new(0., 0., -4.),
