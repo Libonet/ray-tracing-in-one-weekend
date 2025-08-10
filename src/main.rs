@@ -79,7 +79,7 @@ fn simple_light() {
         mat.clone(),
     )));
 
-    let difflight = Arc::new(DiffuseLight::from_color(Color::new(4., 4., 4.)));
+    let difflight = Arc::new(DiffuseLight::from_color(Color::new(1., 0.2, 0.), 4.));
     world.push(Arc::new(QRect::new(
         Point3::new(3., 1., -2.),
         Vec3::new(2., 0., 0.),
