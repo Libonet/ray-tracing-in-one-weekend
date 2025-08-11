@@ -15,7 +15,8 @@ impl DiffuseLight {
     }
 
     pub fn from_color(emit: Color, intensity: Precision) -> Self {
-        let light = emit.unit_vec() / (emit.x().max(emit.y()).max(emit.z())) * intensity;
+        let emit = if emit.near_zero() { Color::new(1., 1., 1.) } else { emit };
+        let light = intensity * (3. / emit.len_square()) * emit;
         Self { tex: Arc::new(SolidColor::new(light)) }
     }
 }
