@@ -2,12 +2,7 @@ use std::{io::stdin, sync::Arc};
 
 use ray_tracing::{
     figures::{
-        bvh::BvhNode,
-        camera::{Camera, DefocusSettings, ImageSettings, ViewSettings},
-        cube::Cube,
-        hittable_list::HitList,
-        quad::{QDisk, QRect, QTri},
-        sphere::Sphere,
+        bvh::BvhNode, camera::{Camera, DefocusSettings, ImageSettings, ViewSettings}, cube::Cube, hittable_list::HitList, quad::{QDisk, QRect, QTri}, rotate::Rotate, sphere::Sphere, translate::Translate
     },
     materials::{
         dielectric::Dielectric, emissive::DiffuseLight, lambertian::Lambertian, material::Material,
@@ -121,6 +116,16 @@ fn cornell_box() {
             white.clone(),
         ))
     );
+
+    let box1 = Arc::new(Cube::new(Point3::new(0., 0., 0.), Point3::new(165., 330., 165.), white.clone()));
+    let box1 = Arc::new(Rotate::new(box1, Vec3::new(0., 15., 0.)));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
+    world.push(box1);
+
+    let box2 = Arc::new(Cube::new(Point3::new(0., 0., 0.), Point3::new(165., 165., 165.), white));
+    let box2 = Arc::new(Rotate::new(box2, Vec3::new(0., -18., 0.)));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+    world.push(box2);
 
     let image_settings = ImageSettings {
         aspect_ratio: 1.,

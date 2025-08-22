@@ -1,4 +1,6 @@
-use crate::utility::{interval::Interval, ray::Ray, vec3::Point3};
+use std::ops::Add;
+
+use crate::utility::{interval::Interval, ray::Ray, vec3::{Point3, Vec3}};
 
 #[derive(Debug, Default, Clone, PartialEq, PartialOrd)]
 pub struct AABB {
@@ -33,6 +35,18 @@ impl AABB {
         pad_to_minimums(&mut x, &mut y, &mut z);
 
         Self { x, y, z }
+    }
+
+    pub fn x(&self) -> Interval {
+        self.x
+    }
+
+    pub fn y(&self) -> Interval {
+        self.y
+    }
+
+    pub fn z(&self) -> Interval {
+        self.z
     }
 
     pub fn concat(&mut self, rhs: AABB) {
@@ -121,5 +135,21 @@ fn pad_to_minimums(x: &mut Interval, y: &mut Interval, z: &mut Interval) {
     }
     if z.size() < delta {
         *z = z.expand(delta);
+    }
+}
+
+impl Add<Vec3> for AABB {
+    type Output = AABB;
+
+    fn add(self, rhs: Vec3) -> Self::Output {
+        Self::Output { x: self.x + rhs.x(), y: self.y + rhs.y(), z: self.z + rhs.z() }
+    }
+}
+
+impl Add<AABB> for Vec3 {
+    type Output = AABB;
+
+    fn add(self, rhs: AABB) -> Self::Output {
+        Self::Output { x: self.x() + rhs.x, y: self.y() + rhs.y, z: self.z() + rhs.z }
     }
 }

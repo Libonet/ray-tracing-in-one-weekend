@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use super::vec3::Precision;
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -60,5 +62,21 @@ impl Interval {
 impl Default for Interval {
     fn default() -> Self {
         Self::EMPTY
+    }
+}
+
+impl Add<Precision> for Interval {
+    type Output = Interval;
+
+    fn add(self, rhs: Precision) -> Self::Output {
+        Self::Output { min: self.min + rhs, max: self.max + rhs }
+    }
+}
+
+impl Add<Interval> for Precision {
+    type Output = Interval;
+
+    fn add(self, rhs: Interval) -> Self::Output {
+        Self::Output { min: self + rhs.min, max: self + rhs.max }
     }
 }
