@@ -40,8 +40,8 @@ impl Texture for ImageTexture {
         let u = Interval::new(0., 1.).clamp(u);
         let v = 1. - Interval::new(0., 1.).clamp(v);
 
-        let i = u * self.0.width() as Precision;
-        let j = v * self.0.height() as Precision;
+        let i = u * (self.0.width()-1) as Precision;
+        let j = v * (self.0.height()-1) as Precision;
 
         let pixel = self.0.get_pixel(i as u32, j as u32).0;
         let mut p = [0.; 3];
