@@ -2,7 +2,7 @@ use std::{io::stdin, sync::Arc};
 
 use ray_tracing::{
     figures::{
-        bvh::BvhNode, camera::{Camera, DefocusSettings, ImageSettings, ViewSettings}, cube::Cube, hittable_list::HitList, quad::{QDisk, QRect, QTri}, rotate::Rotate, sphere::Sphere, translate::Translate
+        bvh::BvhNode, camera::{Camera, DefocusSettings, ImageSettings, ViewSettings}, constant_medium::ConstantMedium, cube::Cube, hittable_list::HitList, quad::{QDisk, QRect, QTri}, rotate::Rotate, sphere::Sphere, translate::Translate
     },
     materials::{
         dielectric::Dielectric, emissive::DiffuseLight, lambertian::Lambertian, material::Material,
@@ -28,6 +28,7 @@ fn match_scene(scene: i32) {
         7 => cube(),
         8 => simple_light(),
         9 => cornell_box(),
+        10 => cornell_smoke(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -51,6 +52,7 @@ fn main() {
         eprintln!("7: Single cube");
         eprintln!("8: Simple light");
         eprintln!("9: Cornell box");
+        eprintln!("10: Cornell smoke");
 
         eprintln!("Choose a scene: ");
         let stdin = stdin();
@@ -58,6 +60,92 @@ fn main() {
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
     }
+}
+
+fn cornell_smoke() {
+    let mut world = HitList::new();
+
+    let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::from_color(Color::new(1., 1., 1.), 7.));
+
+    world.push(
+        Arc::new(QRect::new(
+            Point3::new(555., 0., 0.), 
+            Vec3::new(0.,555.,0.), 
+            Vec3::new(0.,0.,555.), 
+            green.clone(),
+        ))
+    );
+    world.push(
+        Arc::new(QRect::new(
+            Point3::new(0., 0., 0.), 
+            Vec3::new(0.,555.,0.), 
+            Vec3::new(0.,0.,555.), 
+            red.clone(),
+        ))
+    );
+    world.push(
+        Arc::new(QRect::new(
+            Point3::new(113., 554., 127.), 
+            Vec3::new(330., 0., 0.), 
+            Vec3::new(0.,0., 305.), 
+            light.clone(),
+        ))
+    );
+    world.push(
+        Arc::new(QRect::new(
+            Point3::new(0., 0., 0.), 
+            Vec3::new(555.,0.,0.), 
+            Vec3::new(0.,0.,555.), 
+            white.clone(),
+        ))
+    );
+    world.push(
+        Arc::new(QRect::new(
+            Point3::new(555., 555., 555.), 
+            Vec3::new(-555.,0.,0.), 
+            Vec3::new(0.,0.,-555.), 
+            white.clone(),
+        ))
+    );
+    world.push(
+        Arc::new(QRect::new(
+            Point3::new(0., 0., 555.), 
+            Vec3::new(555.,0.,0.), 
+            Vec3::new(0.,555.,0.), 
+            white.clone(),
+        ))
+    );
+
+    let box1 = Arc::new(Cube::new(Point3::new(0., 0., 0.), Point3::new(165., 330., 165.), white.clone()));
+    let box1 = Arc::new(Rotate::new(box1, Vec3::new(0., 15., 0.)));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
+
+    let box2 = Arc::new(Cube::new(Point3::new(0., 0., 0.), Point3::new(165., 165., 165.), white));
+    let box2 = Arc::new(Rotate::new(box2, Vec3::new(0., -18., 0.)));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+
+    world.push(Arc::new(ConstantMedium::from_color(box1, 0.01, Color::new(0., 0., 0.))));
+    world.push(Arc::new(ConstantMedium::from_color(box2, 0.01, Color::new(1., 1., 1.))));
+
+    let image_settings = ImageSettings {
+        aspect_ratio: 1.,
+        image_width: 600,
+        samples_per_pixel: 200,
+        max_depth: 50,
+        background: Color::new(0., 0., 0.),
+    };
+    let view_settings = ViewSettings {
+        vfov: 40.,
+        look_from: Point3::new(278., 278., -800.),
+        look_at: Point3::new(278., 278., 0.),
+        vup: Vec3::new(0., 1., 0.),
+    };
+    let cam = Camera::new(image_settings, view_settings, DefocusSettings::default());
+
+    cam.render(&world);
 }
 
 fn cornell_box() {

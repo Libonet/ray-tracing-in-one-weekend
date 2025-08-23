@@ -8,3 +8,4 @@ pub mod quad;
 pub mod sphere;
 pub mod translate;
 pub mod rotate;
+pub mod constant_medium;
