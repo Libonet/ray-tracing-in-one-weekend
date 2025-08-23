@@ -39,6 +39,7 @@ fn match_scene(scene: i32) {
         10 => cornell_smoke(),
         11 => next_week_final(800, 10000, 40),
         -1 => next_week_final(400, 250, 4), // debug
+        12 => monte_carlo(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -64,6 +65,7 @@ fn main() {
         eprintln!("9: Cornell box");
         eprintln!("10: Cornell smoke");
         eprintln!("11: Next week final render");
+        eprintln!("12: Monte carlo");
 
         eprintln!("Choose a scene: ");
         let stdin = stdin();
@@ -71,6 +73,28 @@ fn main() {
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
     }
+}
+
+fn monte_carlo() {
+    let mut inside_circle = 0_i64;
+    let mut inside_circle_stratified = 0_i64;
+    const N: i32 = 1000000;
+    let sqrt_n = (N as f32).sqrt().round() as i32;
+
+    for i in 0..sqrt_n {
+        for j in 0..sqrt_n {
+            let x = random_f32(-1., 1.);
+            let y = random_f32(-1., 1.);
+            if x*x + y*y < 1. { inside_circle += 1 }
+
+            let x = 2. * ((i as f32 + fastrand::f32()) / sqrt_n as f32) - 1.;
+            let y = 2. * ((j as f32 + fastrand::f32()) / sqrt_n as f32) - 1.;
+            if x*x + y*y < 1. { inside_circle_stratified += 1 }
+        }
+    }
+
+    println!("Regular estimate of PI = {:.12}", (4. * inside_circle as f64) / N as f64);
+    println!("Stratified estimate of PI = {:.12}", (4. * inside_circle_stratified as f64) / N as f64);
 }
 
 fn next_week_final(image_width: i32, samples_per_pixel: i32, max_depth: i32) {
