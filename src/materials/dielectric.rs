@@ -41,6 +41,7 @@ impl Material for Dielectric {
         Some(ScatteredRay {
             ray: scattered,
             attenuation,
+            ..Default::default()
         })
     }
 }

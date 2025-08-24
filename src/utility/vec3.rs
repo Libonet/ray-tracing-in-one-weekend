@@ -1,6 +1,5 @@
 use std::{
-    fmt::Display,
-    ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign},
+    f32::consts::PI, fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign}
 };
 
 use super::utils::random_f32;
@@ -95,6 +94,19 @@ impl Vec3 {
         } else {
             -on_unit_sphere
         }
+    }
+
+    pub fn random_cosine_direction() -> Self {
+        let r1 = fastrand::f32();
+        let r2 = fastrand::f32();
+
+        let phi = 2. * PI * r1;
+        let sqrt_r2 = r2.sqrt();
+        let x = phi.cos() * sqrt_r2;
+        let y = phi.sin() * sqrt_r2;
+        let z = (1.-r2).sqrt();
+
+        Self { x, y, z }
     }
 
     pub fn random_in_unit_disk() -> Self {

@@ -13,9 +13,9 @@ pub struct Rotate {
 
 impl Rotate {
     pub fn new(object: Arc<dyn Hittable>, angles: Vec3) -> Self {
-        let alpha = degrees_to_radians(-angles[0]);
-        let beta = degrees_to_radians(-angles[1]);
-        let gamma = degrees_to_radians(-angles[2]);
+        let alpha = degrees_to_radians(angles[0]);
+        let beta = degrees_to_radians(angles[1]);
+        let gamma = degrees_to_radians(angles[2]);
         let cosa = alpha.cos();
         let cosb = beta.cos();
         let cosg = gamma.cos();
@@ -105,8 +105,8 @@ impl Hittable for Rotate {
     ) -> bool {
         // Transform the ray from world space to object space
         let rotated_ray = {
-            let orig = rotate_vec3(&self.rotation_matrix, *r.origin());
-            let dir = rotate_vec3(&self.rotation_matrix, *r.direction());
+            let orig = rotate_vec3(&self.inverse_rotation, *r.origin());
+            let dir = rotate_vec3(&self.inverse_rotation, *r.direction());
             &Ray::new(orig, dir)
         };
 
@@ -116,8 +116,8 @@ impl Hittable for Rotate {
         }
 
         // Transform the intersection from object space back to world space.
-        rec.p = rotate_vec3(&self.inverse_rotation, rec.p);
-        rec.normal = rotate_vec3(&self.inverse_rotation, rec.normal);
+        rec.p = rotate_vec3(&self.rotation_matrix, rec.p);
+        rec.set_face_normal(r, &rotate_vec3(&self.rotation_matrix, rec.normal).unit_vec());
 
         true
     }

@@ -40,6 +40,7 @@ fn match_scene(scene: i32) {
         11 => next_week_final(800, 10000, 40),
         -1 => next_week_final(400, 250, 4), // debug
         12 => monte_carlo(),
+        -2 => random_points(),
         n => eprintln!("{n} is not a valid scene..."),
     }
 }
@@ -72,6 +73,13 @@ fn main() {
         let mut input = String::with_capacity(5);
         assert!(stdin.read_line(&mut input).is_ok());
         match_scene(input.trim_end().parse().unwrap_or_default());
+    }
+}
+
+fn random_points() {
+    for i in 1..=200 {
+        let vec = Vec3::random_cosine_direction();
+        println!("s{i}::{}::{}::{}::0::1::1::1.0::0.0::0.0::0::0.0;", vec.x(), vec.y(), vec.z());
     }
 }
 
@@ -325,8 +333,8 @@ fn cornell_box() {
 
     world.push(Arc::new(QRect::new(
         Point3::new(555., 0., 0.),
-        Vec3::new(0., 555., 0.),
         Vec3::new(0., 0., 555.),
+        Vec3::new(0., 555., 0.),
         green.clone(),
     )));
     world.push(Arc::new(QRect::new(

@@ -9,6 +9,7 @@ use super::lambertian::Lambertian;
 pub struct ScatteredRay {
     pub ray: Ray,
     pub attenuation: Color,
+    pub pdf: Precision,
 }
 
 pub fn default_material() -> Lambertian {
@@ -16,9 +17,15 @@ pub fn default_material() -> Lambertian {
 }
 
 pub trait Material: Send + Sync {
-    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatteredRay>;
+    fn scatter(&self, _ray: &Ray, _rec: &HitRecord) -> Option<ScatteredRay> {
+        None
+    }
 
     fn emitted(&self, _u: Precision, _v: Precision, _p: Point3) -> Color {
         Color::new(0., 0., 0.)
+    }
+
+    fn scattering_pdf(&self, _ray: &Ray, _rec: &HitRecord, _scattered: &Ray) -> Precision {
+        1.
     }
 }

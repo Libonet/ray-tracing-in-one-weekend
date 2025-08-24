@@ -32,7 +32,7 @@ pub struct Quad<T: QuadPrimitive> {
     bbox: AABB,
     normal: Vec3,
     d: Precision,
-    w: Vec3,
+    // w: Vec3,
 
     phantom: PhantomData<T>,
 }
@@ -44,7 +44,7 @@ impl<T: QuadPrimitive> Quad<T> {
         let n = u.cross(&v);
         let normal = n.unit_vec();
         let d = normal.dot(&q);
-        let w = n / n.dot(&n);
+        // let w = n / n.dot(&n);
 
         Self {
             q,
@@ -54,7 +54,7 @@ impl<T: QuadPrimitive> Quad<T> {
             bbox,
             normal,
             d,
-            w,
+            // w,
             phantom: PhantomData,
         }
     }
@@ -81,9 +81,13 @@ impl<T: QuadPrimitive> Hittable for Quad<T> {
         }
 
         let intersection = r.at(t);
-        let planar_hitpt_vector = intersection - self.q;
-        let alpha = self.w.dot(&planar_hitpt_vector.cross(&self.v));
-        let beta = self.w.dot(&self.u.cross(&planar_hitpt_vector));
+        // let planar_hitpt_vector = intersection - self.q;
+        // let alpha = self.w.dot(&planar_hitpt_vector.cross(&self.v));
+        // let beta = self.w.dot(&self.u.cross(&planar_hitpt_vector));
+
+        let pq = intersection - self.q;
+        let alpha = pq.dot(&self.u) / self.u.len_square();
+        let beta = pq.dot(&self.v) / self.v.len_square();
 
         if !T::is_interior(alpha, beta, rec) {
             return false;

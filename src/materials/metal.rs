@@ -38,6 +38,7 @@ impl Material for Metal {
         (scattered.direction().dot(&rec.normal) > 0.).then_some(ScatteredRay {
             ray: scattered,
             attenuation,
+            ..Default::default()
         })
     }
 }

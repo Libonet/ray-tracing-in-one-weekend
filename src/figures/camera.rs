@@ -241,8 +241,14 @@ impl Camera {
             return color_from_emission;
         }
 
-        let scaterred_ray = scattered_ray.unwrap();
-        let color_from_scatter = scaterred_ray.attenuation * self.ray_color(&scaterred_ray.ray, depth-1, world);
+        let scattered = scattered_ray.unwrap();
+        let scattering_pdf = rec.material.scattering_pdf(r, &rec, &scattered.ray);
+        let pdf_value = scattering_pdf;
+
+        let color_from_scatter = (scattered.attenuation
+            * scattering_pdf
+            * self.ray_color(&scattered.ray, depth - 1, world))
+            / pdf_value;
 
         color_from_emission + color_from_scatter
     }
@@ -273,9 +279,9 @@ impl Camera {
         Vec3::new(px, py, 0.)
     }
 
-    fn sample_square() -> Vec3 {
-        Vec3::new(fastrand::f32() - 0.5, fastrand::f32() - 0.5, 0.)
-    }
+    // fn sample_square() -> Vec3 {
+    //     Vec3::new(fastrand::f32() - 0.5, fastrand::f32() - 0.5, 0.)
+    // }
 
     /// Returns a random point in the camera defocus disk.
     fn defocus_disk_sample(&self) -> Point3 {
