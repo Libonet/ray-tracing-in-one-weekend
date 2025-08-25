@@ -389,7 +389,7 @@ fn cornell_box() {
     let image_settings = ImageSettings {
         aspect_ratio: 1.,
         image_width: 600,
-        samples_per_pixel: 200,
+        samples_per_pixel: 10,
         max_depth: 50,
         background: Color::new(0., 0., 0.),
     };

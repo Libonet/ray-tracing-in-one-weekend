@@ -4,7 +4,7 @@ use crate::{
         color::Color,
         interval::Interval,
         ray::Ray,
-        utils::degrees_to_radians,
+        utils::{degrees_to_radians, random_f32},
         vec3::{Point3, Precision, Vec3},
     },
 };
@@ -241,14 +241,40 @@ impl Camera {
             return color_from_emission;
         }
 
-        let scattered = scattered_ray.unwrap();
-        let scattering_pdf = rec.material.scattering_pdf(r, &rec, &scattered.ray);
-        let pdf_value = scattering_pdf;
+        let on_light = Point3::new(random_f32(213., 343.), 554., random_f32(227., 332.));
+        let to_light = on_light - rec.p;
+        let distance_squared = to_light.len_square();
+        let to_light = to_light.unit_vec();
 
-        let color_from_scatter = (scattered.attenuation
+        if to_light.dot(&rec.normal) < 0. {
+            return color_from_emission;
+        }
+
+        let light_area = (343.-213.) * (332.-227.);
+        let light_cosine = to_light.y().abs();
+        if light_cosine < 0.000001 {
+            return color_from_emission;
+        }
+
+        let pdf_value = distance_squared / (light_cosine * light_area);
+        let scattered = Ray::with_time(rec.p, to_light, r.time());
+
+        let scattering_pdf = rec.material.scattering_pdf(r, &rec, &scattered);
+
+        let sct = scattered_ray.unwrap();
+        let color_from_scatter = (sct.attenuation
             * scattering_pdf
-            * self.ray_color(&scattered.ray, depth - 1, world))
+            * self.ray_color(&scattered, depth-1, world))
             / pdf_value;
+
+        // let scattered = scattered_ray.unwrap();
+        // let scattering_pdf = rec.material.scattering_pdf(r, &rec, &scattered.ray);
+        // let pdf_value = scattering_pdf;
+
+        // let color_from_scatter = (scattered.attenuation
+        //     * scattering_pdf
+        //     * self.ray_color(&scattered.ray, depth - 1, world))
+        //     / pdf_value;
 
         color_from_emission + color_from_scatter
     }
