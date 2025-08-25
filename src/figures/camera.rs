@@ -234,7 +234,7 @@ impl Camera {
             return self.background;
         }
 
-        let color_from_emission = rec.material.emitted(rec.u, rec.v, rec.p);
+        let color_from_emission = rec.material.emitted(r, &rec, rec.u, rec.v, rec.p);
 
         let scattered_ray = rec.material.scatter(r, &rec);
         if scattered_ray.is_none() {

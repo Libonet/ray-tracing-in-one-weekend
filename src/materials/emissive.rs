@@ -26,7 +26,10 @@ impl Material for DiffuseLight {
         None
     }
 
-    fn emitted(&self, u: Precision, v: Precision, p: Point3) -> Color {
+    fn emitted(&self, _ray: &crate::utility::ray::Ray, rec: &crate::figures::hittable::HitRecord, u: Precision, v: Precision, p: Point3) -> Color {
+        if !rec.front_face {
+            return Color::new(0., 0., 0.);
+        }
         self.tex.value(u, v, p)
     }
 }
