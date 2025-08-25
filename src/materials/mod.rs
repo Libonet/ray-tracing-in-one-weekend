@@ -4,3 +4,4 @@ pub mod material;
 pub mod metal;
 pub mod emissive;
 pub mod isotropic;
+pub mod pdf;

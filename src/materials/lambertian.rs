@@ -1,9 +1,9 @@
-use std::{f32::consts::PI, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     figures::hittable::HitRecord,
     textures::texture::{SolidColor, Texture},
-    utility::{color::Color, orthonormal::Onb, ray::Ray, vec3::Vec3},
+    utility::{color::Color, orthonormal::Onb, ray::Ray, vec3::Vec3, utils::PI},
 };
 
 use super::material::{Material, ScatteredRay};

@@ -50,7 +50,7 @@ impl Hittable for ConstantMedium {
 
         let ray_length = r.direction().len();
         let distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
-        let hit_distance = self.neg_inv_density * fastrand::f32().ln();
+        let hit_distance = self.neg_inv_density * fastrand::f64().ln();
 
         if hit_distance > distance_inside_boundary {
             return false;

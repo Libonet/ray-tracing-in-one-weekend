@@ -1,10 +1,11 @@
 use crate::{
     image_formats::ppm::PPM,
+    materials::pdf::{CosinePdf, Pdf},
     utility::{
         color::Color,
         interval::Interval,
         ray::Ray,
-        utils::{degrees_to_radians, random_f32},
+        utils::degrees_to_radians,
         vec3::{Point3, Precision, Vec3},
     },
 };
@@ -241,40 +242,16 @@ impl Camera {
             return color_from_emission;
         }
 
-        let on_light = Point3::new(random_f32(213., 343.), 554., random_f32(227., 332.));
-        let to_light = on_light - rec.p;
-        let distance_squared = to_light.len_square();
-        let to_light = to_light.unit_vec();
-
-        if to_light.dot(&rec.normal) < 0. {
-            return color_from_emission;
-        }
-
-        let light_area = (343.-213.) * (332.-227.);
-        let light_cosine = to_light.y().abs();
-        if light_cosine < 0.000001 {
-            return color_from_emission;
-        }
-
-        let pdf_value = distance_squared / (light_cosine * light_area);
-        let scattered = Ray::with_time(rec.p, to_light, r.time());
+        let surface_pdf = CosinePdf::new(rec.normal);
+        let scattered = Ray::with_time(rec.p, surface_pdf.generate(), r.time());
+        let pdf_value = surface_pdf.value(*scattered.direction());
 
         let scattering_pdf = rec.material.scattering_pdf(r, &rec, &scattered);
 
-        let sct = scattered_ray.unwrap();
-        let color_from_scatter = (sct.attenuation
-            * scattering_pdf
-            * self.ray_color(&scattered, depth-1, world))
-            / pdf_value;
-
-        // let scattered = scattered_ray.unwrap();
-        // let scattering_pdf = rec.material.scattering_pdf(r, &rec, &scattered.ray);
-        // let pdf_value = scattering_pdf;
-
-        // let color_from_scatter = (scattered.attenuation
-        //     * scattering_pdf
-        //     * self.ray_color(&scattered.ray, depth - 1, world))
-        //     / pdf_value;
+        let sct_info = scattered_ray.unwrap();
+        let color_from_scatter =
+            (sct_info.attenuation * scattering_pdf * self.ray_color(&scattered, depth - 1, world))
+                / pdf_value;
 
         color_from_emission + color_from_scatter
     }
@@ -293,14 +270,14 @@ impl Camera {
             self.defocus_disk_sample()
         };
         let ray_direction = pixel_center - ray_origin;
-        let ray_time = fastrand::f32();
+        let ray_time = fastrand::f64();
 
         Ray::with_time(ray_origin, ray_direction, ray_time)
     }
 
     fn sample_square_stratified(&self, s_i: i32, s_j: i32) -> Vec3 {
-        let px = ((s_i as f32 + fastrand::f32()) * self.recip_sqrt_spp) - 0.5;
-        let py = ((s_j as f32 + fastrand::f32()) * self.recip_sqrt_spp) - 0.5;
+        let px = ((s_i as f64 + fastrand::f64()) * self.recip_sqrt_spp) - 0.5;
+        let py = ((s_j as f64 + fastrand::f64()) * self.recip_sqrt_spp) - 0.5;
 
         Vec3::new(px, py, 0.)
     }

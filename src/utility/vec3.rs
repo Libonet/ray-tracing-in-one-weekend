@@ -1,10 +1,10 @@
 use std::{
-    f32::consts::PI, fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign}
+    f64::consts::PI, fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign}
 };
 
-use super::utils::random_f32;
+use super::utils::random_f64;
 
-pub type Precision = f32;
+pub type Precision = f64;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Vec3 {
@@ -46,17 +46,17 @@ impl Vec3 {
 
     pub fn random() -> Self {
         Self {
-            x: fastrand::f32(),
-            y: fastrand::f32(),
-            z: fastrand::f32(),
+            x: fastrand::f64(),
+            y: fastrand::f64(),
+            z: fastrand::f64(),
         }
     }
 
     pub fn random_bounded(min: Precision, max: Precision) -> Self {
         Self {
-            x: random_f32(min, max),
-            y: random_f32(min, max),
-            z: random_f32(min, max),
+            x: random_f64(min, max),
+            y: random_f64(min, max),
+            z: random_f64(min, max),
         }
     }
 
@@ -97,8 +97,8 @@ impl Vec3 {
     }
 
     pub fn random_cosine_direction() -> Self {
-        let r1 = fastrand::f32();
-        let r2 = fastrand::f32();
+        let r1 = fastrand::f64();
+        let r2 = fastrand::f64();
 
         let phi = 2. * PI * r1;
         let sqrt_r2 = r2.sqrt();
@@ -111,7 +111,7 @@ impl Vec3 {
 
     pub fn random_in_unit_disk() -> Self {
         loop {
-            let p = Vec3::new(random_f32(-1., 1.), random_f32(-1., 1.), 0.);
+            let p = Vec3::new(random_f64(-1., 1.), random_f64(-1., 1.), 0.);
             if p.len_square() < 1. {
                 return p;
             }

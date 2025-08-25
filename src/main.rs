@@ -19,7 +19,7 @@ use ray_tracing::{
     textures::{checker::CheckerTexture, image::ImageTexture, noise::NoiseTexture},
     utility::{
         color::Color,
-        utils::random_f32,
+        utils::random_f64,
         vec3::{Point3, Precision, Vec3},
     },
 };
@@ -79,7 +79,12 @@ fn main() {
 fn random_points() {
     for i in 1..=200 {
         let vec = Vec3::random_cosine_direction();
-        println!("s{i}::{}::{}::{}::0::1::1::1.0::0.0::0.0::0::0.0;", vec.x(), vec.y(), vec.z());
+        println!(
+            "s{i}::{}::{}::{}::0::1::1::1.0::0.0::0.0::0::0.0;",
+            vec.x(),
+            vec.y(),
+            vec.z()
+        );
     }
 }
 
@@ -87,22 +92,32 @@ fn monte_carlo() {
     let mut inside_circle = 0_i64;
     let mut inside_circle_stratified = 0_i64;
     const N: i32 = 1000000;
-    let sqrt_n = (N as f32).sqrt().round() as i32;
+    let sqrt_n = (N as f64).sqrt().round() as i32;
 
     for i in 0..sqrt_n {
         for j in 0..sqrt_n {
-            let x = random_f32(-1., 1.);
-            let y = random_f32(-1., 1.);
-            if x*x + y*y < 1. { inside_circle += 1 }
+            let x = random_f64(-1., 1.);
+            let y = random_f64(-1., 1.);
+            if x * x + y * y < 1. {
+                inside_circle += 1
+            }
 
-            let x = 2. * ((i as f32 + fastrand::f32()) / sqrt_n as f32) - 1.;
-            let y = 2. * ((j as f32 + fastrand::f32()) / sqrt_n as f32) - 1.;
-            if x*x + y*y < 1. { inside_circle_stratified += 1 }
+            let x = 2. * ((i as f64 + fastrand::f64()) / sqrt_n as f64) - 1.;
+            let y = 2. * ((j as f64 + fastrand::f64()) / sqrt_n as f64) - 1.;
+            if x * x + y * y < 1. {
+                inside_circle_stratified += 1
+            }
         }
     }
 
-    println!("Regular estimate of PI = {:.12}", (4. * inside_circle as f64) / N as f64);
-    println!("Stratified estimate of PI = {:.12}", (4. * inside_circle_stratified as f64) / N as f64);
+    println!(
+        "Regular estimate of PI = {:.12}",
+        (4. * inside_circle as f64) / N as f64
+    );
+    println!(
+        "Stratified estimate of PI = {:.12}",
+        (4. * inside_circle_stratified as f64) / N as f64
+    );
 }
 
 fn next_week_final(image_width: i32, samples_per_pixel: i32, max_depth: i32) {
@@ -117,7 +132,7 @@ fn next_week_final(image_width: i32, samples_per_pixel: i32, max_depth: i32) {
             let z0 = -1000. + j as Precision * w;
             let y0 = 0.;
             let x1 = x0 + w;
-            let y1 = random_f32(1., 101.);
+            let y1 = random_f64(1., 101.);
             let z1 = z0 + w;
 
             boxes1.push(Arc::new(Cube::new(
@@ -389,7 +404,7 @@ fn cornell_box() {
     let image_settings = ImageSettings {
         aspect_ratio: 1.,
         image_width: 600,
-        samples_per_pixel: 10,
+        samples_per_pixel: 1000,
         max_depth: 50,
         background: Color::new(0., 0., 0.),
     };
@@ -573,11 +588,11 @@ fn weekend_final() {
 
     for a in -11..11 {
         for b in -11..11 {
-            let choose_mat = fastrand::f32();
+            let choose_mat = fastrand::f64();
             let center = Point3::new(
-                a as Precision + 0.9 * fastrand::f32(),
+                a as Precision + 0.9 * fastrand::f64(),
                 0.2,
-                b as Precision + 0.9 * fastrand::f32(),
+                b as Precision + 0.9 * fastrand::f64(),
             );
 
             if (center - Point3::new(4., 0.2, 0.)).len() > 0.9 {
@@ -590,7 +605,7 @@ fn weekend_final() {
                     // metal.
 
                     let albedo = Color::random_bounded(0.5, 1.);
-                    let fuzz = random_f32(0., 0.5);
+                    let fuzz = random_f64(0., 0.5);
                     Arc::new(Metal::new(albedo, fuzz))
                 } else {
                     // glass.
@@ -755,11 +770,11 @@ fn bouncing_spheres() {
 
     for a in -11..11 {
         for b in -11..11 {
-            let choose_mat = fastrand::f32();
+            let choose_mat = fastrand::f64();
             let center = Point3::new(
-                a as Precision + 0.9 * fastrand::f32(),
+                a as Precision + 0.9 * fastrand::f64(),
                 0.2,
-                b as Precision + 0.9 * fastrand::f32(),
+                b as Precision + 0.9 * fastrand::f64(),
             );
 
             if (center - Point3::new(4., 0.2, 0.)).len() > 0.9 {
@@ -768,7 +783,7 @@ fn bouncing_spheres() {
 
                     let albedo = Color::random() * Color::random();
                     let sphere_material = Arc::new(Lambertian::new(albedo));
-                    let center2 = center + Vec3::new(0., random_f32(0., 0.5), 0.);
+                    let center2 = center + Vec3::new(0., random_f64(0., 0.5), 0.);
                     world.push(Arc::new(Sphere::new_animated(
                         center,
                         center2,
@@ -779,7 +794,7 @@ fn bouncing_spheres() {
                     // metal.
 
                     let albedo = Color::random_bounded(0.5, 1.);
-                    let fuzz = random_f32(0., 0.5);
+                    let fuzz = random_f64(0., 0.5);
                     let sphere_material = Arc::new(Metal::new(albedo, fuzz));
                     world.push(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                 } else {

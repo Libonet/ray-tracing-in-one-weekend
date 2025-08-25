@@ -1,10 +1,11 @@
-use std::{f32::consts::PI, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     materials::material::Material,
     utility::{
         interval::Interval,
         ray::Ray,
+        utils::PI,
         vec3::{Point3, Precision, Vec3},
     },
 };
